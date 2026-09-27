@@ -1,0 +1,34 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Data (uploaded documents & vector DB — contains sensitive medical info)
+backend/data/uploads/*
+backend/data/chroma_db/*
+*.db
+*.sqlite
+*.sqlite3
+!backend/data/uploads/.gitkeep
+!backend/data/chroma_db/.gitkeep
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Logs and local operating-system files
+*.log
+Thumbs.db
+
+# OS
+.DS_Store

@@ -1,0 +1,26 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+python-dotenv==1.0.1
+
+# LangChain
+langchain==0.3.7
+langchain-community==0.3.5
+langchain-google-genai==2.0.4
+langchain-huggingface==0.1.2
+langchain-chroma==0.1.4
+
+# Vector DB
+chromadb==0.5.18
+
+# Embeddings (HuggingFace, local, lightweight model)
+sentence-transformers==3.2.1
+
+# Document parsing
+pypdf==5.0.1
+python-docx==1.1.2
+
+# OCR (PDFium renders scanned PDFs in-process; Tesseract OCR engine is installed separately)
+pytesseract==0.3.13
+pypdfium2==5.13.0
+Pillow==10.4.0
