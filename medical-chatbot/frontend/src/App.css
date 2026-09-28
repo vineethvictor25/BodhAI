@@ -281,3 +281,374 @@ body {
   background: #93c5fd;
   cursor: not-allowed;
 }
+
+.session-check,
+.login-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background-color: #edf3f5;
+  background-image:
+    linear-gradient(rgba(37, 78, 89, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 78, 89, 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.session-check { color: #526b72; }
+
+.login-panel {
+  width: min(100%, 420px);
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
+  background: #fff;
+  border: 1px solid #d7e1e4;
+  border-top: 4px solid #16817b;
+  border-radius: 8px;
+  box-shadow: 0 18px 50px rgba(27, 58, 65, 0.1);
+}
+
+.login-kicker {
+  margin: 0 0 8px;
+  color: #16817b;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.login-panel h1 {
+  margin: 0 0 24px;
+  color: #20363c;
+  font-size: 26px;
+}
+
+.login-panel label {
+  margin: 0 0 6px;
+  color: #40575e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.login-panel input {
+  min-height: 42px;
+  margin: 0 0 16px;
+  padding: 9px 11px;
+  border: 1px solid #bdcdd1;
+  border-radius: 5px;
+  font: inherit;
+}
+
+.login-panel input:focus,
+.patient-picker select:focus {
+  outline: 2px solid #16817b;
+  outline-offset: 1px;
+}
+
+.login-panel button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 5px;
+  background: #167b75;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-panel button:disabled { opacity: 0.65; cursor: wait; }
+
+.login-panel .auth-mode-toggle {
+  margin-top: 12px;
+  background: transparent;
+  color: #176c68;
+  font-size: 13px;
+}
+
+.login-error {
+  margin: 0 0 14px;
+  color: #b42318;
+  font-size: 13px;
+}
+
+.account-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #52656b;
+  font-size: 12px;
+}
+
+.account-bar button {
+  padding: 5px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  color: #334155;
+  font: inherit;
+  cursor: pointer;
+}
+
+.profile-panel {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 18px;
+  padding: 12px;
+  border: 1px solid #d7e1e4;
+  border-radius: 6px;
+  background: #f8fbfb;
+}
+
+.profile-panel h2 {
+  margin: 0 0 4px;
+  color: #334b51;
+  font-size: 14px;
+}
+
+.profile-panel label {
+  color: #52656b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.profile-panel input {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  margin-bottom: 4px;
+  padding: 7px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  color: #334155;
+  font: inherit;
+  font-size: 12px;
+}
+
+.profile-panel button {
+  min-height: 34px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: 4px;
+  background: #167b75;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.profile-panel button:disabled { opacity: 0.65; cursor: wait; }
+
+.profile-message {
+  margin: 2px 0;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.profile-message.success { color: #15803d; }
+.profile-message.error { color: #b42318; }
+
+.patient-picker {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+  color: #52656b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.patient-picker select {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  color: #334155;
+  font: inherit;
+}
+
+.dropzone-disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.consent-control {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: #52656b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.consent-control input {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: #167b75;
+}
+
+.reminder-section {
+  margin: 4px 0 18px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.reminder-section h2 {
+  margin: 0 0 10px;
+  color: #334b51;
+  font-size: 14px;
+}
+
+.reminder-config-note,
+.reminder-notice {
+  margin: 0 0 10px;
+  color: #8a4b08;
+  font-size: 11px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.reminder-form {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.reminder-form label {
+  color: #52656b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.reminder-form input,
+.reminder-form select {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  color: #334155;
+  font: inherit;
+  font-size: 12px;
+}
+
+.reminder-form .reminder-time {
+  display: grid;
+  gap: 6px;
+}
+
+.reminder-form button,
+.reminder-list button {
+  min-height: 34px;
+  margin-top: 4px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: #167b75;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reminder-form button:disabled,
+.reminder-list button:disabled { opacity: 0.6; cursor: wait; }
+
+.reminder-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reminder-list li {
+  display: grid;
+  gap: 4px;
+  padding: 9px 0;
+  border-bottom: 1px solid #e2e8f0;
+  color: #52656b;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.reminder-list strong { color: #334b51; font-size: 12px; }
+.reminder-stopped { color: #8b3a34; font-weight: 600; }
+
+.due-reminders {
+  margin: 0 0 14px;
+  padding: 10px;
+  border: 1px solid #bfd8d5;
+  border-radius: 5px;
+  background: #f4faf9;
+}
+
+.due-reminders h3 {
+  margin: 0 0 8px;
+  color: #23615c;
+  font-size: 12px;
+}
+
+.due-reminder {
+  display: grid;
+  gap: 7px;
+  padding: 9px 0;
+  border-top: 1px solid #d9e8e6;
+  color: #52656b;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.due-reminder strong { color: #334b51; }
+
+.due-reminder textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 7px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  color: #334155;
+  font: inherit;
+  line-height: 1.4;
+}
+
+.due-reminder a {
+  color: #176c68;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
+.due-reminder button {
+  min-height: 32px;
+  padding: 5px 8px;
+  border: 1px solid #aac5c2;
+  border-radius: 4px;
+  background: #fff;
+  color: #23615c;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.due-reminder button:disabled { opacity: 0.6; cursor: wait; }
+
+@media (max-width: 480px) {
+  .login-panel { padding: 24px; }
+}

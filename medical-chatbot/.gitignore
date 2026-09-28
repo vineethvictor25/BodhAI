@@ -13,11 +13,18 @@ __pycache__/
 .ruff_cache/
 
 # Data (uploaded documents & vector DB — contains sensitive medical info)
+backend/data/*
+!backend/data/uploads/
+!backend/data/chroma_db/
 backend/data/uploads/*
 backend/data/chroma_db/*
+backend/data/.auth_secret
 *.db
 *.sqlite
 *.sqlite3
+*.db-*
+*.sqlite-*
+*.sqlite3-*
 !backend/data/uploads/.gitkeep
 !backend/data/chroma_db/.gitkeep
 

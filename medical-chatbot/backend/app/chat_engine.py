@@ -55,7 +55,11 @@ def _build_context(chunks) -> str:
     return "\n\n---\n\n".join(parts)
 
 
-def answer_question(question: str, history: list[dict] | None = None) -> dict:
+def answer_question(
+    question: str,
+    history: list[dict] | None = None,
+    owner_id: str | None = None,
+) -> dict:
     """
     Returns:
       {
@@ -67,7 +71,7 @@ def answer_question(question: str, history: list[dict] | None = None) -> dict:
     history = history or []
     standalone_question = _condense_question(question, history)
 
-    retriever = get_retriever()
+    retriever = get_retriever(owner_id=owner_id)
     chunks = retriever.invoke(standalone_question)
 
     if not chunks:

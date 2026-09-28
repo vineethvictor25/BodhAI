@@ -1,186 +1,159 @@
-# 🩺 MedDoc Assistant
+# MedDoc Assistant
 
-A local, lightweight chatbot that reads your prescriptions and medical
-reports (PDF, Word, or photos) and answers your questions about them in
-plain, friendly language — powered by **Google AI Studio (Gemini)** for
-generation and **local HuggingFace embeddings + ChromaDB** for retrieval,
-so nothing about your documents is sent anywhere except the final
-question + relevant excerpts to Gemini.
+A React and FastAPI application for uploading medical documents, asking questions with source excerpts, and managing medication reminders. Text extraction, embeddings, and storage run locally. Answer generation uses Google's Gemini API; optional reminders use SMTP or WhatsApp.
 
-## How it works (RAG pipeline)
+See the [architecture diagram and data flows](docs/architecture.md).
 
-```
- Upload (PDF/DOCX/image)
-        │
-        ▼
- 1. Document Loader   → extracts text (OCR fallback for scanned/handwritten docs)
-        │
-        ▼
- 2. Chunking          → RecursiveCharacterTextSplitter (LangChain)
-        │
-        ▼
- 3. Embedding         → HuggingFace "all-MiniLM-L6-v2" (runs locally, CPU)
-        │
-        ▼
- 4. Vector DB         → ChromaDB (persisted locally in backend/data/chroma_db)
-        │
-        ▼
- 5. User asks a question in the chat UI
-        │
-        ▼
- 6. Retriever finds the most relevant chunks
-        │
-        ▼
- 7. Prompting         → Gemini (Google AI Studio) answers using ONLY
-                         those chunks, in simple language, with sources
-        │
-        ▼
- 8. Friendly chat UI  → React, shows answer + expandable sources
-```
+## Features and access
 
-## Project structure
+- Upload PDF, DOCX, PNG, JPG, and JPEG files. Scanned PDF pages and images use Tesseract OCR; PDFium renders PDFs without Poppler. Convert legacy `.doc` files to `.docx`: the API accepts the suffix, but the parser cannot read legacy Word binaries.
+- Reindex saved uploads or replace documents with the same filename for the same patient. Answers display retrieved source excerpts.
+- The first registered account becomes the administrator; later accounts are patients. Create the administrator before exposing the app to others.
+- Patients access their own documents. Administrators can list and query all patients' documents and must select a patient for uploads. Administrator chat searches are not limited to the patient selected for upload.
+- Profiles support contact details, password changes, and separate email and WhatsApp reminder consent. Sign-up requires an international E.164 phone number and a password of at least 12 characters.
+- Administrators enter reminder schedules; patients can stop their own schedules. Schedules are not extracted automatically from prescriptions.
 
-```
-medical-chatbot/
-├── backend/
-│   ├── app/
-│   │   ├── main.py            # FastAPI app & endpoints
-│   │   ├── config.py          # settings from .env
-│   │   ├── document_loader.py # PDF/DOCX/image → text (+ OCR fallback)
-│   │   ├── chunking.py        # RecursiveCharacterTextSplitter
-│   │   ├── embeddings.py      # HuggingFace embedding model
-│   │   ├── vectorstore.py     # ChromaDB wrapper
-│   │   ├── prompts.py         # prompt templates
-│   │   └── chat_engine.py     # retrieval + Gemini call
-│   ├── data/
-│   │   ├── uploads/           # saved uploaded files
-│   │   └── chroma_db/         # persisted vector DB
-│   ├── requirements.txt
-│   └── .env.example
-└── frontend/
-    ├── src/
-    │   ├── App.jsx             # layout: sidebar (upload) + chat
-    │   ├── components/
-    │   │   ├── FileUpload.jsx
-    │   │   ├── ChatWindow.jsx
-    │   │   └── MessageBubble.jsx
-    │   └── App.css
-    └── package.json
-```
+## Prerequisites
 
-## 1. Prerequisites
+- Python 3.10 or newer is required by the source syntax. Compatibility of the pinned dependencies with every newer Python release has not been verified.
+- Node.js `^20.19.0 || >=22.12.0` and npm, matching Vite's requirement in the lockfile.
+- A [Google AI Studio API key](https://aistudio.google.com/app/apikey) and a Gemini model available to the account and compatible with the installed SDK.
+- Tesseract OCR installed separately and available on `PATH`, or configured with `TESSERACT_CMD` in the local environment file. PDFium is installed by the Python requirements; Poppler is unnecessary.
+- Internet access for installation, the initial embedding-model download, Gemini calls, and configured reminder providers.
 
-- **Python 3.10+**
-- **Node.js 18+** and npm
-- A free **Google AI Studio API key**: https://aistudio.google.com/app/apikey
-- **Tesseract OCR** (needed for scanned/photographed prescriptions):
-       - macOS: `brew install tesseract`
-       - Ubuntu/Debian: `sudo apt install tesseract-ocr`
-       - Windows: install [Tesseract](https://github.com/UB-Mannheim/tesseract/wiki)
-              and add it to your PATH. The default executable path is
-              `C:\Program Files\Tesseract-OCR\tesseract.exe`.
+## Backend setup
 
-If Tesseract is installed elsewhere, set `TESSERACT_CMD` in `backend/.env`.
-Use forward slashes in Windows `.env` paths, for example
-`C:/Program Files/Tesseract-OCR/tesseract.exe`.
+From the project root, in PowerShell:
 
-PDF pages are rendered by `pypdfium2`; Poppler is not required.
-
-## 2. Backend setup
-
-```bash
+```powershell
 cd backend
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+```
 
-pip install -r requirements.txt
+Alternatively, on macOS/Linux:
 
+```sh
+cd backend
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements.txt
 cp .env.example .env
-# open .env and paste your GOOGLE_API_KEY
+```
 
+For a new setup, fill in **both** `GOOGLE_API_KEY` and `GEMINI_MODEL` in `.env`. If `.env` already exists, merge missing settings instead of overwriting it. The code retains a legacy model default; do not assume that model is still available. Keep credentials only in the ignored local file.
+
+Start from `backend/`:
+
+```sh
 uvicorn app.main:app --reload --port 8000
 ```
 
-The first run will download the embedding model (~80MB) automatically.
-Backend runs at **http://localhost:8000**.
+The API runs at [localhost:8000](http://localhost:8000), with endpoint schemas at [/docs](http://localhost:8000/docs). Write requests require an allowed Origin, so use the frontend for normal interactive operations. The first operation requiring embeddings downloads the configured model into the local HuggingFace cache.
 
-## 3. Frontend setup
+## Frontend setup
 
-In a new terminal:
+In a second terminal, from the project root:
 
-```bash
+```sh
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
-Frontend runs at **http://localhost:5173** — open it in your browser.
+Open [localhost:5173](http://localhost:5173). Vite proxies `/api` to the backend on port 8000. Use port 5173: the backend currently allows only `localhost:5173` and `127.0.0.1:5173` as browser origins.
 
-## 4. Using it
+## Configuration
 
-1. Drag & drop (or click to browse) your prescriptions/reports — PDF,
-   `.docx`, or a photo (`.jpg`/`.png`) of a handwritten prescription.
-2. Wait for the "indexed" status and chunk count per file. The document
-       list shows the current number of indexed chunks.
-3. For an existing document, choose **Reindex** to rebuild its index from
-       the saved upload, or **Replace file** to index an updated file of the
-       same type without duplicating its chunks.
-4. Ask questions in the chat, e.g.:
-   - "What medicines was I prescribed and how should I take them?"
-   - "Is my cholesterol level normal?"
-   - "Summarize my last blood test."
-   - Follow-ups work too: "What about the one before that?"
-5. Click **Sources** under any answer to see exactly which document/text
-   it was based on.
-6. Use **Clear all documents** in the sidebar to wipe everything and
-   start fresh.
+The [environment template](backend/.env.example) has empty credential fields and generic settings.
 
-## Notes on running this locally / lightweight
+| Settings | Purpose |
+| --- | --- |
+| `GOOGLE_API_KEY`, `GEMINI_MODEL` | Gemini credentials and model selection |
+| `EMBEDDING_MODEL` | Local CPU model; defaults to `sentence-transformers/all-MiniLM-L6-v2` |
+| `CHUNK_SIZE`, `CHUNK_OVERLAP`, `RETRIEVAL_K` | Defaults: 1000 characters, 150 characters, and 5 chunks |
+| `UPLOAD_DIR`, `CHROMA_DIR` | Storage paths relative to `backend/`, unless absolute |
+| `AUTH_SECRET`, `AUTH_COOKIE_SECURE` | Optional signing secret and HTTPS cookie flag |
+| `TESSERACT_CMD` | Optional OCR executable path |
+| `REMINDER_DELIVERY_MODE` | `email`, `manual_whatsapp`, or `whatsapp_cloud` |
+| `SMTP_*`, `APP_PUBLIC_URL` | Email transport and portal link |
+| `WHATSAPP_*` | Cloud API credentials, API version, and template settings |
 
-- Embeddings run **on your CPU**, no API key or internet needed for them.
-- The vector DB (Chroma) is just a folder on disk — no server to run.
-- Only your **question + the small number of retrieved text snippets**
-  are sent to Gemini via the Google AI Studio API — not your full
-  documents.
-- Everything (documents, embeddings, chat) stays on your laptop except
-  that one API call per question.
+Changing the embedding model requires rebuilding the index because existing vectors were produced by the previous model.
 
-### OCR and UI troubleshooting
+## Medication reminders
 
-The backend OCR dependencies in `backend/requirements.txt` are:
+The administrator enters the prescribed medicine, dose pattern, food instruction, start date, duration, timezone, and send times. Email and WhatsApp each require separate patient consent.
 
-- `pytesseract==0.3.13`: Python wrapper that calls the separately installed
-       Tesseract OCR engine.
-- `pypdfium2==5.13.0`: renders scanned PDF pages inside Python without
-       launching Poppler executables.
-- `Pillow==10.4.0`: supplies image handling for OCR.
+- **Email (default):** configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM_EMAIL`, and credentials if required by the server. TLS defaults to enabled. Messages include the medicine name, scheduled dose count, time of day, and food instruction (before food, after food, with food, on an empty stomach, or as prescribed). The portal link is optional for managing reminders; reading the instructions does not require signing in. `email_accepted` means server acceptance, not confirmed inbox delivery.
+- **Manual WhatsApp:** administrators view due drafts, send them manually, then mark them sent in the app.
+- **WhatsApp Cloud:** configure the token, phone-number ID, API version, and approved template. Four body parameters are supplied in order: medicine name, dose count, day part, and food instruction. Verify provider availability and template requirements in the provider account before enabling delivery.
 
-If a scanned PDF upload reports `Could not OCR scanned PDF pages: Unable to
-get page count`, an older version of the loader was invoking Poppler's
-`pdfinfo.exe` and `pdftoppm.exe`. Windows Smart App Control blocked those
-executables. The loader now uses `pypdfium2`, so Poppler does not need to be
-installed or allowed through Smart App Control. Install the Python
-dependencies with `pip install -r requirements.txt` from `backend/`, then
-restart the backend.
+The scheduler checks every 30 seconds while the backend runs. A SQLite ledger tracks dose slots and attempts. Email has a 12-hour catch-up window and up to three attempts separated by five minutes; automatic WhatsApp has a three-minute window. Delivery and exactly-once receipt are not guaranteed. Backend downtime can cause missed reminders.
 
-If the page is blank after documents load, check the browser console for
-`useRef is not defined`. The document list uses React's `useRef` hook; the
-frontend now imports it in `src/App.jsx`.
+## Data handling and privacy
 
-## Extending this project
+Documentation and examples use generic values rather than real records or credentials. The running application handles sensitive information:
 
-- **Multi-document history & summarization**: add a `/api/summarize`
-  endpoint that pulls all chunks for a user across time and asks Gemini
-  to produce a longitudinal summary for their doctor (see "Future
-  implementation" below).
-- Swap ChromaDB for FAISS if you prefer (the `vectorstore.py` module is
-  the only place that would need to change).
-- Add authentication if this ever needs to support multiple people.
+| Location or service | Data handled |
+| --- | --- |
+| `backend/data/uploads/` | Original files; saved filenames include generated identifiers and original filenames |
+| `backend/data/chroma_db/` | Extracted text, embeddings, filenames, timestamps, and owner IDs |
+| `backend/data/users.sqlite3` | Contact details, roles, consent, salted password hashes, schedules, and delivery records |
+| `backend/data/.auth_secret` | Generated signing secret, unless provided through the environment |
+| Backend memory | Up to 20 chat turns per user; cleared on reset or process restart |
+| Gemini API | Questions and retrieved text with filenames; follow-up rewriting also sends up to five recent question/answer turns |
+| SMTP provider | Recipient email, medicine name, scheduled dose count, time of day, food instructions, and portal link |
+| WhatsApp Cloud API | Recipient phone number and medication template parameters |
 
-### Planned: Doctor summary view
+Original documents are not sent to Gemini by this pipeline, but excerpts and history can contain personal or medical information. Follow-ups can make two Gemini calls. Library telemetry and provider retention settings are separate from these explicit application data flows and have not been audited here.
 
-A future `/api/summarize-for-doctor` endpoint that retrieves *all*
-chunks (not just top-k for a question), groups them by document date,
-and asks Gemini to produce a structured longitudinal summary — trends in
-key values, medication history, and flagged abnormalities — for a
-person's doctor to quickly review.
+Runtime data, environment files, database sidecars, and logs are ignored by Git. Ignore rules do not remove previously tracked files or history. Keep records, backups, credentials, and identifying screenshots out of commits and shared bug reports. The application does not encrypt uploads or databases at rest.
+
+**Clear documents** removes the patient's documents and chat history; for an administrator it removes all documents and histories. It does not remove accounts or reminder schedules. **Reset chat** clears only the current user's history. Local deletion does not delete information already sent to providers.
+
+## Project structure
+
+```text
+backend/
+  app/
+    main.py             API routes, access checks, chat memory, scheduler lifecycle
+    auth.py             SQLite accounts and signed session cookies
+    config.py           Environment settings and storage configuration
+    document_loader.py  PDF, DOCX, and image extraction / OCR
+    chunking.py         Text chunks and ownership metadata
+    embeddings.py       Cached local CPU embedding model
+    vectorstore.py      Persistent Chroma index and owner filters
+    chat_engine.py      Follow-up rewriting, retrieval, and Gemini calls
+    prompts.py          Answer and rewrite prompts
+    reminders.py        Schedules, delivery ledger, SMTP and WhatsApp adapters
+  .env.example          Shareable configuration template
+  requirements.txt     Backend dependencies
+frontend/
+  src/App.jsx           Account, profile, document, and reminder UI
+  src/api.js            Same-origin API requests with cookies
+  src/components/       Upload and chat components
+  vite.config.js        Development server and API proxy
+  package-lock.json     Frontend dependency lockfile
+docs/architecture.md    Architecture diagram and data boundaries
+```
+
+## Verification and deployment limits
+
+```sh
+# From backend/, inside the virtual environment
+python -m pip check
+python -m compileall -q app
+python -m unittest discover -s tests
+
+# From frontend/
+npm run build
+```
+
+Focused reminder-email tests cover message details and all food instructions using a mocked SMTP server, without loading local credentials or accessing patient records. A functional smoke check should also use synthetic documents and cover sign-up, patient isolation, upload/reindex, chat sources, and reminder consent with delivery disabled or a test provider.
+
+Use one backend process for the current design: history and rate limiting are in memory, and each process starts a scheduler. A production frontend build needs a server that serves static files and routes `/api` to FastAPI; Vite's development proxy is not part of that build. Another deployment origin requires updating both CORS and the write-request origin allowlist in `main.py`, configuring the public portal URL, and enabling secure cookies for HTTPS.
+
+Existing dependency pins are retained, with Pydantic declared directly and the unused direct `langchain-community` dependency removed. This is not a dependency security audit or a verified upgrade to current releases. Doctor-summary generation is not implemented.

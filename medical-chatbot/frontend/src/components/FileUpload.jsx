@@ -1,28 +1,27 @@
 import { useRef, useState } from 'react'
+import { apiFetch, readResponse } from '../api.js'
 
-const API_BASE = 'http://localhost:8000/api'
-
-export default function FileUpload({ onUploaded }) {
+export default function FileUpload({ onUploaded, ownerId = null, disabled = false }) {
   const inputRef = useRef(null)
   const [uploading, setUploading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [lastResults, setLastResults] = useState([])
 
   async function uploadFiles(fileList) {
-    if (!fileList || fileList.length === 0) return
+    if (disabled || !fileList || fileList.length === 0) return
     setUploading(true)
     setLastResults([])
 
     const formData = new FormData()
     Array.from(fileList).forEach((file) => formData.append('files', file))
+    if (ownerId) formData.append('owner_id', ownerId)
 
     try {
-      const res = await fetch(`${API_BASE}/upload`, {
+      const res = await apiFetch('/upload', {
         method: 'POST',
         body: formData,
       })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.detail || `Upload failed (${res.status})`)
+      const data = await readResponse(res)
       setLastResults(data.results || [])
       onUploaded?.()
     } catch (err) {
@@ -35,14 +34,15 @@ export default function FileUpload({ onUploaded }) {
   return (
     <div className="upload-box">
       <div
-        className={`dropzone ${dragOver ? 'dropzone-active' : ''}`}
-        onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+        className={`dropzone ${dragOver ? 'dropzone-active' : ''} ${disabled ? 'dropzone-disabled' : ''}`}
+        aria-disabled={disabled}
+        onClick={() => !disabled && inputRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); if (!disabled) setDragOver(true) }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => {
           e.preventDefault()
           setDragOver(false)
-          uploadFiles(e.dataTransfer.files)
+          if (!disabled) uploadFiles(e.dataTransfer.files)
         }}
       >
         <input
@@ -50,13 +50,16 @@ export default function FileUpload({ onUploaded }) {
           type="file"
           multiple
           accept=".pdf,.docx,.doc,.png,.jpg,.jpeg"
+          disabled={disabled}
           hidden
           onChange={(e) => {
             uploadFiles(e.target.files)
             e.target.value = ''
           }}
         />
-        {uploading ? (
+        {disabled ? (
+          <p>Create a patient account before uploading records.</p>
+        ) : uploading ? (
           <p>Uploading & processing…</p>
         ) : (
           <>

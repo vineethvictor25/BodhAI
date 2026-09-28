@@ -29,13 +29,16 @@ def get_vectorstore() -> Chroma:
         return _create_vectorstore()
 
 
-def replace_chunks(chunks: list[LCDocument], source: str) -> int:
+def replace_chunks(chunks: list[LCDocument], source: str, owner_id: str) -> int:
     if not chunks:
         return 0
     with _vectorstore_lock:
         store = get_vectorstore()
         try:
-            existing = store.get(where={"source": source}, include=[])
+            existing = store.get(
+                where={"$and": [{"source": source}, {"owner_id": owner_id}]},
+                include=[],
+            )
             if existing["ids"]:
                 store.delete(ids=existing["ids"])
             store.add_documents(chunks)
@@ -45,32 +48,41 @@ def replace_chunks(chunks: list[LCDocument], source: str) -> int:
     return len(chunks)
 
 
-def get_retriever(k: int | None = None):
+def get_retriever(k: int | None = None, owner_id: str | None = None):
     store = get_vectorstore()
-    return store.as_retriever(search_kwargs={"k": k or settings.RETRIEVAL_K})
+    search_kwargs = {"k": k or settings.RETRIEVAL_K}
+    if owner_id is not None:
+        search_kwargs["filter"] = {"owner_id": owner_id}
+    return store.as_retriever(search_kwargs=search_kwargs)
 
 
-def list_sources() -> list[dict]:
+def list_sources(owner_id: str | None = None) -> list[dict]:
     """Return the distinct set of uploaded documents currently indexed."""
     with _vectorstore_lock:
         store = get_vectorstore()
-        raw = store.get(include=["metadatas"])
+        raw = store.get(
+            where={"owner_id": owner_id} if owner_id is not None else None,
+            include=["metadatas"],
+        )
         seen = {}
         chunk_counts = {}
         for meta in raw.get("metadatas", []):
             if not meta:
                 continue
             source = meta.get("source")
+            owner_id = meta.get("owner_id", "legacy")
+            key = (owner_id, source)
             if source:
-                chunk_counts[source] = chunk_counts.get(source, 0) + 1
-            if source and source not in seen:
-                seen[source] = {
+                chunk_counts[key] = chunk_counts.get(key, 0) + 1
+            if source and key not in seen:
+                seen[key] = {
                     "filename": source,
                     "doc_type": meta.get("doc_type", "unknown"),
                     "uploaded_at": meta.get("uploaded_at"),
+                    "owner_id": owner_id,
                 }
-        for source, document in seen.items():
-            document["chunk_count"] = chunk_counts[source]
+        for key, document in seen.items():
+            document["chunk_count"] = chunk_counts[key]
         return list(seen.values())
 
 
@@ -79,3 +91,9 @@ def clear_all():
         store = get_vectorstore()
         store.delete_collection()
         _create_vectorstore.cache_clear()
+
+
+def clear_owner(owner_id: str):
+    with _vectorstore_lock:
+        store = get_vectorstore()
+        store.delete(where={"owner_id": owner_id})

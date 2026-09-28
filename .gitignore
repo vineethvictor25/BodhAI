@@ -1,0 +1,36 @@
+# Environment files and local secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python environments and generated files
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local databases, uploaded documents, and generated indexes
+*.db
+*.sqlite
+*.sqlite3
+medical-chatbot/backend/data/uploads/*
+medical-chatbot/backend/data/chroma_db/*
+!medical-chatbot/backend/data/uploads/.gitkeep
+!medical-chatbot/backend/data/chroma_db/.gitkeep
+
+# Frontend dependencies and build output
+node_modules/
+medical-chatbot/frontend/dist/
+medical-chatbot/frontend/.vite/
+
+# Logs and operating-system files
+*.log
+Thumbs.db
+.DS_Store

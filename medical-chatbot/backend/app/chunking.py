@@ -23,6 +23,7 @@ def chunk_document(
     text: str,
     filename: str,
     doc_type: str = "unknown",
+    owner_id: str | None = None,
 ) -> list[LCDocument]:
     """
     Turns raw extracted text into a list of LangChain Documents (chunks)
@@ -43,6 +44,7 @@ def chunk_document(
                 "doc_type": doc_type,
                 "uploaded_at": upload_time,
                 "chunk_index": idx,
+                **({"owner_id": owner_id} if owner_id else {}),
             },
         )
         for idx, chunk in enumerate(raw_chunks)

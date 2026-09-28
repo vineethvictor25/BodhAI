@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import MessageBubble from './MessageBubble.jsx'
-
-const API_BASE = 'http://localhost:8000/api'
+import { apiFetch } from '../api.js'
 
 export default function ChatWindow({ hasDocuments }) {
   const [messages, setMessages] = useState([
@@ -30,7 +29,7 @@ export default function ChatWindow({ hasDocuments }) {
     setLoading(true)
 
     try {
-      const res = await fetch(`${API_BASE}/chat`, {
+      const res = await apiFetch('/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text }),
