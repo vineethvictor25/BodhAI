@@ -1,0 +1,6 @@
+.inline-check{display:flex;align-items:flex-start;gap:8px;font-size:12px;margin:12px 0;line-height:1.6}
+.inline-check input{width:auto;flex:0 0 auto;margin-top:4px;accent-color:var(--teal)}
+.review-controls{padding:12px 16px;margin:18px 0;background:#f5f9f7;border:1px solid #dfece7;border-radius:7px}
+#changeDiff pre{border-left:3px solid var(--teal)}
+#changeInstruction{font-family:'Segoe UI',Arial,sans-serif;font-size:13px}
+#managedOverview strong{font-size:16px}

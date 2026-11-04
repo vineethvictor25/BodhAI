@@ -1,0 +1,41 @@
+name: FlowForge checks
+
+on:
+  push:
+    paths:
+      - "GenAI_ETL_Pipeline/**"
+      - ".github/workflows/flowforge-ci.yml"
+  pull_request:
+    paths:
+      - "GenAI_ETL_Pipeline/**"
+      - ".github/workflows/flowforge-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: GenAI_ETL_Pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: GenAI_ETL_Pipeline/requirements.lock.txt
+      - run: python -m pip install -r requirements.lock.txt
+      - run: python -m pip check
+      - run: python -m pytest -q
+        env:
+          PROVIDER: local
+          EMAIL_ENABLED: "false"
+      - run: node --check static/app.js
+      - run: node --check static/medallion.js
+      - run: node --check static/destinations.js
+      - run: node --check static/privacy.js
+      - run: node --check static/knowledge.js
+      - run: node --check static/changes.js

@@ -1,0 +1,34 @@
+{
+  "records": [
+    {
+      "discount": 0,
+      "currency": "USD",
+      "order_date": "2026-11-01",
+      "updated_at": "2026-11-01T12:00:00Z",
+      "status": "completed",
+      "order": {
+        "id": "O-3"
+      },
+      "product": {
+        "category": "tech"
+      },
+      "qty": 1,
+      "price": "$300.00"
+    },
+    {
+      "discount": 0,
+      "currency": "USD",
+      "order_date": "2026-11-01",
+      "updated_at": "2026-11-01T12:00:00Z",
+      "status": "cancelled",
+      "order": {
+        "id": "O-4"
+      },
+      "product": {
+        "category": "home"
+      },
+      "qty": 2,
+      "price": "$25.00"
+    }
+  ]
+}

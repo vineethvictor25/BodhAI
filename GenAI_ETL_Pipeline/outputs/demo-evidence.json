@@ -1,0 +1,792 @@
+{
+  "before": {
+    "id": "a2d896fbb8ab4328bd7796a5ec6c4511",
+    "status": "quality_failed",
+    "report": {
+      "total": 6,
+      "accepted": 3,
+      "rejected": 3,
+      "reject_ratio": 0.5,
+      "quality_score": 50.0,
+      "published": 0,
+      "mappings": [
+        {
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "name": "products.csv",
+          "columns": [
+            {
+              "target": "product_id",
+              "source": "sku",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "sku",
+                  "score": 1.0
+                },
+                {
+                  "source": "title",
+                  "score": 0.507
+                },
+                {
+                  "source": "type",
+                  "score": 0.372
+                }
+              ]
+            },
+            {
+              "target": "product_name",
+              "source": "title",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "title",
+                  "score": 1.0
+                },
+                {
+                  "source": "type",
+                  "score": 0.413
+                },
+                {
+                  "source": "length",
+                  "score": 0.338
+                }
+              ]
+            },
+            {
+              "target": "length_m",
+              "source": "length",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "length",
+                  "score": 1.0
+                },
+                {
+                  "source": "cost",
+                  "score": 0.279
+                },
+                {
+                  "source": "type",
+                  "score": 0.233
+                }
+              ]
+            },
+            {
+              "target": "price",
+              "source": "cost",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "cost",
+                  "score": 1.0
+                },
+                {
+                  "source": "type",
+                  "score": 0.413
+                },
+                {
+                  "source": "ccy",
+                  "score": 0.266
+                }
+              ]
+            },
+            {
+              "target": "currency",
+              "source": "ccy",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "ccy",
+                  "score": 1.0
+                },
+                {
+                  "source": "type",
+                  "score": 0.266
+                }
+              ]
+            },
+            {
+              "target": "category",
+              "source": "type",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "type",
+                  "score": 1.0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "row_number": 1,
+          "changes": [
+            {
+              "column": "product_id",
+              "rule": "trim",
+              "before": " P-001 ",
+              "after": "P-001"
+            },
+            {
+              "column": "length_m",
+              "rule": "length_m",
+              "before": "Length = 200cm",
+              "after": 2.0
+            },
+            {
+              "column": "price",
+              "rule": "number",
+              "before": "129.99",
+              "after": 129.99
+            },
+            {
+              "column": "currency",
+              "rule": "upper",
+              "before": "usd",
+              "after": "USD"
+            },
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Furniture",
+              "after": "furniture"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 1
+        },
+        {
+          "row_number": 2,
+          "changes": [
+            {
+              "column": "length_m",
+              "rule": "length_m",
+              "before": "2m",
+              "after": 2.0
+            },
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Furniture",
+              "after": "furniture"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 2
+        },
+        {
+          "row_number": 3,
+          "changes": [
+            {
+              "column": "length_m",
+              "rule": "length_m",
+              "before": "450mm",
+              "after": 0.45
+            },
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Lighting",
+              "after": "lighting"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 3
+        },
+        {
+          "row_number": 4,
+          "changes": [
+            {
+              "column": "length_m",
+              "rule": "length_m",
+              "before": "1.5m",
+              "after": 1.5
+            },
+            {
+              "column": "price",
+              "rule": "number",
+              "before": "199.00",
+              "after": 199.0
+            },
+            {
+              "column": "currency",
+              "rule": "contract_default",
+              "value": "USD"
+            },
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Furniture",
+              "after": "furniture"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 4
+        },
+        {
+          "row_number": 5,
+          "changes": [
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Furniture",
+              "after": "furniture"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 5
+        },
+        {
+          "row_number": 6,
+          "changes": [
+            {
+              "column": "length_m",
+              "rule": "length_m",
+              "before": "100cm",
+              "after": 1.0
+            },
+            {
+              "column": "price",
+              "rule": "number",
+              "before": "89.50",
+              "after": 89.5
+            },
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Furniture",
+              "after": "furniture"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 6
+        }
+      ],
+      "changes_truncated": false,
+      "gate": {
+        "max_reject_ratio": 0.2,
+        "passed": false
+      },
+      "contract_error": false,
+      "preview": [
+        {
+          "row_number": 1,
+          "record": {
+            "product_id": "P-001",
+            "product_name": "Desk",
+            "length_m": 2.0,
+            "price": 129.99,
+            "currency": "USD",
+            "category": "furniture"
+          },
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 1
+        },
+        {
+          "row_number": 4,
+          "record": {
+            "product_id": "P-004",
+            "product_name": "Bench",
+            "length_m": 1.5,
+            "price": 199.0,
+            "currency": "USD",
+            "category": "furniture"
+          },
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 4
+        },
+        {
+          "row_number": 6,
+          "record": {
+            "product_id": "P-006",
+            "product_name": "Chair",
+            "length_m": 1.0,
+            "price": 89.5,
+            "currency": "USD",
+            "category": "furniture"
+          },
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 6
+        }
+      ],
+      "issues": [
+        {
+          "row_number": 2,
+          "raw": {
+            "sku": "P-002",
+            "title": "Shelf",
+            "length": "2m",
+            "cost": "$1,299.00",
+            "ccy": "USD",
+            "type": "Furniture"
+          },
+          "issues": [
+            {
+              "column": "price",
+              "code": "quality",
+              "message": "could not convert string to float: '$1,299.00'",
+              "source": "cost"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 2
+        },
+        {
+          "row_number": 3,
+          "raw": {
+            "sku": "P-003",
+            "title": "Lamp",
+            "length": "450mm",
+            "cost": "$49.00",
+            "ccy": "USD",
+            "type": "Lighting"
+          },
+          "issues": [
+            {
+              "column": "price",
+              "code": "quality",
+              "message": "could not convert string to float: '$49.00'",
+              "source": "cost"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 3
+        },
+        {
+          "row_number": 5,
+          "raw": {
+            "sku": "P-005",
+            "title": "Broken item",
+            "length": "-2m",
+            "cost": "-10",
+            "ccy": "USD",
+            "type": "Furniture"
+          },
+          "issues": [
+            {
+              "column": "length_m",
+              "code": "quality",
+              "message": "Value below semantic minimum",
+              "source": "length"
+            },
+            {
+              "column": "price",
+              "code": "quality",
+              "message": "Value below semantic minimum",
+              "source": "cost"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 5
+        }
+      ]
+    }
+  },
+  "patch": [
+    {
+      "column": "price",
+      "before": [
+        "number"
+      ],
+      "after": [
+        "currency_number"
+      ],
+      "evidence_count": 2
+    }
+  ],
+  "after": {
+    "id": "3529574de4c241edab57468b83875109",
+    "status": "succeeded",
+    "report": {
+      "total": 6,
+      "accepted": 5,
+      "rejected": 1,
+      "reject_ratio": 0.16666666666666666,
+      "quality_score": 83.33,
+      "published": 5,
+      "mappings": [
+        {
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "name": "products.csv",
+          "columns": [
+            {
+              "target": "product_id",
+              "source": "sku",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "sku",
+                  "score": 1.0
+                },
+                {
+                  "source": "title",
+                  "score": 0.507
+                },
+                {
+                  "source": "type",
+                  "score": 0.372
+                }
+              ]
+            },
+            {
+              "target": "product_name",
+              "source": "title",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "title",
+                  "score": 1.0
+                },
+                {
+                  "source": "type",
+                  "score": 0.413
+                },
+                {
+                  "source": "length",
+                  "score": 0.338
+                }
+              ]
+            },
+            {
+              "target": "length_m",
+              "source": "length",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "length",
+                  "score": 1.0
+                },
+                {
+                  "source": "cost",
+                  "score": 0.279
+                },
+                {
+                  "source": "type",
+                  "score": 0.233
+                }
+              ]
+            },
+            {
+              "target": "price",
+              "source": "cost",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "cost",
+                  "score": 1.0
+                },
+                {
+                  "source": "type",
+                  "score": 0.413
+                },
+                {
+                  "source": "ccy",
+                  "score": 0.266
+                }
+              ]
+            },
+            {
+              "target": "currency",
+              "source": "ccy",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "ccy",
+                  "score": 1.0
+                },
+                {
+                  "source": "type",
+                  "score": 0.266
+                }
+              ]
+            },
+            {
+              "target": "category",
+              "source": "type",
+              "confidence": 1.0,
+              "reason": "alias/name match",
+              "candidates": [
+                {
+                  "source": "type",
+                  "score": 1.0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "row_number": 1,
+          "changes": [
+            {
+              "column": "product_id",
+              "rule": "trim",
+              "before": " P-001 ",
+              "after": "P-001"
+            },
+            {
+              "column": "length_m",
+              "rule": "length_m",
+              "before": "Length = 200cm",
+              "after": 2.0
+            },
+            {
+              "column": "price",
+              "rule": "currency_number",
+              "before": "129.99",
+              "after": 129.99
+            },
+            {
+              "column": "currency",
+              "rule": "upper",
+              "before": "usd",
+              "after": "USD"
+            },
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Furniture",
+              "after": "furniture"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 1
+        },
+        {
+          "row_number": 2,
+          "changes": [
+            {
+              "column": "length_m",
+              "rule": "length_m",
+              "before": "2m",
+              "after": 2.0
+            },
+            {
+              "column": "price",
+              "rule": "currency_number",
+              "before": "$1,299.00",
+              "after": 1299.0
+            },
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Furniture",
+              "after": "furniture"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 2
+        },
+        {
+          "row_number": 3,
+          "changes": [
+            {
+              "column": "length_m",
+              "rule": "length_m",
+              "before": "450mm",
+              "after": 0.45
+            },
+            {
+              "column": "price",
+              "rule": "currency_number",
+              "before": "$49.00",
+              "after": 49.0
+            },
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Lighting",
+              "after": "lighting"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 3
+        },
+        {
+          "row_number": 4,
+          "changes": [
+            {
+              "column": "length_m",
+              "rule": "length_m",
+              "before": "1.5m",
+              "after": 1.5
+            },
+            {
+              "column": "price",
+              "rule": "currency_number",
+              "before": "199.00",
+              "after": 199.0
+            },
+            {
+              "column": "currency",
+              "rule": "contract_default",
+              "value": "USD"
+            },
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Furniture",
+              "after": "furniture"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 4
+        },
+        {
+          "row_number": 5,
+          "changes": [
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Furniture",
+              "after": "furniture"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 5
+        },
+        {
+          "row_number": 6,
+          "changes": [
+            {
+              "column": "length_m",
+              "rule": "length_m",
+              "before": "100cm",
+              "after": 1.0
+            },
+            {
+              "column": "price",
+              "rule": "currency_number",
+              "before": "89.50",
+              "after": 89.5
+            },
+            {
+              "column": "category",
+              "rule": "lower",
+              "before": "Furniture",
+              "after": "furniture"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 6
+        }
+      ],
+      "changes_truncated": false,
+      "gate": {
+        "max_reject_ratio": 0.2,
+        "passed": true
+      },
+      "contract_error": false,
+      "preview": [
+        {
+          "row_number": 1,
+          "record": {
+            "product_id": "P-001",
+            "product_name": "Desk",
+            "length_m": 2.0,
+            "price": 129.99,
+            "currency": "USD",
+            "category": "furniture"
+          },
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 1
+        },
+        {
+          "row_number": 2,
+          "record": {
+            "product_id": "P-002",
+            "product_name": "Shelf",
+            "length_m": 2.0,
+            "price": 1299.0,
+            "currency": "USD",
+            "category": "furniture"
+          },
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 2
+        },
+        {
+          "row_number": 3,
+          "record": {
+            "product_id": "P-003",
+            "product_name": "Lamp",
+            "length_m": 0.45,
+            "price": 49.0,
+            "currency": "USD",
+            "category": "lighting"
+          },
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 3
+        },
+        {
+          "row_number": 4,
+          "record": {
+            "product_id": "P-004",
+            "product_name": "Bench",
+            "length_m": 1.5,
+            "price": 199.0,
+            "currency": "USD",
+            "category": "furniture"
+          },
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 4
+        },
+        {
+          "row_number": 6,
+          "record": {
+            "product_id": "P-006",
+            "product_name": "Chair",
+            "length_m": 1.0,
+            "price": 89.5,
+            "currency": "USD",
+            "category": "furniture"
+          },
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 6
+        }
+      ],
+      "issues": [
+        {
+          "row_number": 5,
+          "raw": {
+            "sku": "P-005",
+            "title": "Broken item",
+            "length": "-2m",
+            "cost": "-10",
+            "ccy": "USD",
+            "type": "Furniture"
+          },
+          "issues": [
+            {
+              "column": "length_m",
+              "code": "quality",
+              "message": "Value below semantic minimum",
+              "source": "length"
+            },
+            {
+              "column": "price",
+              "code": "quality",
+              "message": "Value below semantic minimum",
+              "source": "cost"
+            }
+          ],
+          "dataset_id": "0d65965d15aa4c37b2c34c8695f759c6",
+          "source_row": 5
+        }
+      ]
+    }
+  }
+}

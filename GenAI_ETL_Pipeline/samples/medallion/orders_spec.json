@@ -1,0 +1,281 @@
+{
+  "name": "order_line_mart",
+  "description": "",
+  "target": "order_lines",
+  "columns": [
+    {
+      "name": "order_id",
+      "dtype": "string",
+      "required": true,
+      "aliases": [
+        "order.id"
+      ],
+      "transforms": [
+        "trim",
+        "upper"
+      ],
+      "minimum": null,
+      "maximum": null,
+      "allowed": [],
+      "default": null,
+      "value_map": {},
+      "unmapped": "reject",
+      "format": null
+    },
+    {
+      "name": "category",
+      "dtype": "string",
+      "required": true,
+      "aliases": [
+        "product.category"
+      ],
+      "transforms": [
+        "trim",
+        "lower"
+      ],
+      "minimum": null,
+      "maximum": null,
+      "allowed": [],
+      "default": null,
+      "value_map": {
+        "tech": "technology",
+        "technology": "technology",
+        "home": "home"
+      },
+      "unmapped": "reject",
+      "format": null
+    },
+    {
+      "name": "quantity",
+      "dtype": "integer",
+      "required": true,
+      "aliases": [
+        "qty"
+      ],
+      "transforms": [],
+      "minimum": 1.0,
+      "maximum": 10000.0,
+      "allowed": [],
+      "default": null,
+      "value_map": {},
+      "unmapped": "reject",
+      "format": null
+    },
+    {
+      "name": "unit_price",
+      "dtype": "number",
+      "required": true,
+      "aliases": [
+        "price"
+      ],
+      "transforms": [
+        "currency_number"
+      ],
+      "minimum": 0.0,
+      "maximum": null,
+      "allowed": [],
+      "default": null,
+      "value_map": {},
+      "unmapped": "reject",
+      "format": null
+    },
+    {
+      "name": "discount",
+      "dtype": "number",
+      "required": false,
+      "aliases": [],
+      "transforms": [],
+      "minimum": 0.0,
+      "maximum": null,
+      "allowed": [],
+      "default": 0,
+      "value_map": {},
+      "unmapped": "reject",
+      "format": null
+    },
+    {
+      "name": "currency",
+      "dtype": "string",
+      "required": true,
+      "aliases": [],
+      "transforms": [
+        "trim",
+        "upper"
+      ],
+      "minimum": null,
+      "maximum": null,
+      "allowed": [
+        "USD"
+      ],
+      "default": null,
+      "value_map": {},
+      "unmapped": "reject",
+      "format": null
+    },
+    {
+      "name": "order_date",
+      "dtype": "string",
+      "required": true,
+      "aliases": [],
+      "transforms": [
+        "iso_date"
+      ],
+      "minimum": null,
+      "maximum": null,
+      "allowed": [],
+      "default": null,
+      "value_map": {},
+      "unmapped": "reject",
+      "format": null
+    },
+    {
+      "name": "updated_at",
+      "dtype": "string",
+      "required": true,
+      "aliases": [],
+      "transforms": [
+        "iso_timestamp"
+      ],
+      "minimum": null,
+      "maximum": null,
+      "allowed": [],
+      "default": null,
+      "value_map": {},
+      "unmapped": "reject",
+      "format": null
+    },
+    {
+      "name": "status",
+      "dtype": "string",
+      "required": true,
+      "aliases": [],
+      "transforms": [
+        "trim",
+        "lower"
+      ],
+      "minimum": null,
+      "maximum": null,
+      "allowed": [],
+      "default": null,
+      "value_map": {},
+      "unmapped": "reject",
+      "format": null
+    }
+  ],
+  "primary_key": "order_id",
+  "max_reject_ratio": 0.2,
+  "mapping_threshold": 0.82,
+  "mapping_overrides": {},
+  "derived_columns": [
+    {
+      "name": "gross_revenue",
+      "operation": "multiply",
+      "fields": [
+        "quantity",
+        "unit_price"
+      ],
+      "separator": " ",
+      "dtype": "number"
+    },
+    {
+      "name": "net_revenue",
+      "operation": "subtract",
+      "fields": [
+        "gross_revenue",
+        "discount"
+      ],
+      "separator": " ",
+      "dtype": "number"
+    },
+    {
+      "name": "order_month",
+      "operation": "month",
+      "fields": [
+        "order_date"
+      ],
+      "separator": " ",
+      "dtype": "integer"
+    }
+  ],
+  "row_filters": [
+    {
+      "column": "status",
+      "operator": "eq",
+      "value": "completed"
+    }
+  ],
+  "gold": {
+    "group_by": [
+      "category",
+      "currency",
+      "order_month"
+    ],
+    "measures": [
+      {
+        "name": "order_lines",
+        "operation": "count",
+        "column": null
+      },
+      {
+        "name": "revenue",
+        "operation": "sum",
+        "column": "net_revenue"
+      },
+      {
+        "name": "units",
+        "operation": "sum",
+        "column": "quantity"
+      },
+      {
+        "name": "avg_line_revenue",
+        "operation": "avg",
+        "column": "net_revenue"
+      }
+    ]
+  },
+  "business": {
+    "grain": "One row per order line; order_id uniquely identifies a line",
+    "owner": "Commerce data team",
+    "consumers": [
+      "Finance reporting",
+      "Sales BI"
+    ],
+    "freshness_minutes": 1440,
+    "model": "fact"
+  },
+  "load": {
+    "mode": "upsert",
+    "partition_column": null,
+    "partition_values": [],
+    "tracked_columns": []
+  },
+  "batch_checks": [
+    {
+      "name": "minimum_rows",
+      "kind": "row_count",
+      "severity": "critical",
+      "column": null,
+      "minimum": 1.0,
+      "maximum": null,
+      "reference_target": null
+    },
+    {
+      "name": "nonnegative_revenue",
+      "kind": "sum",
+      "severity": "critical",
+      "column": "net_revenue",
+      "minimum": 0.0,
+      "maximum": null,
+      "reference_target": null
+    }
+  ],
+  "deduplication": "latest",
+  "dedup_order_by": "updated_at",
+  "destination": {
+    "cloud": "local",
+    "warehouse": "sqlite",
+    "namespace": "analytics",
+    "catalog": "",
+    "settings": {}
+  }
+}

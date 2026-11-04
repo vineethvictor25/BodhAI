@@ -1,0 +1,107 @@
+{
+  "preview": {
+    "activation_eligible": true,
+    "base_definition_hash": "0afef48132c62e5ce7857b13c360fcb79cd65caaad64d26223e45b916001d956",
+    "baseline": {
+      "accepted": 3,
+      "published": 0,
+      "quality_gate_passed": false,
+      "quality_score": 50.0,
+      "reject_ratio": 0.5,
+      "rejected": 3,
+      "total": 6
+    },
+    "candidate": {
+      "accepted": 5,
+      "published": 0,
+      "quality_gate_passed": true,
+      "quality_score": 83.33,
+      "reject_ratio": 0.16666666666666666,
+      "rejected": 1,
+      "total": 6
+    },
+    "candidate_hash": "db72f57cb95ba78bb94681bee7aa9535fdf3c1824b37f79dfcba9cad6950b0cf",
+    "candidate_issues": [
+      {
+        "dataset_id": "73d8099657784dbb88de596c3e686d1a",
+        "issues": [
+          {
+            "code": "quality",
+            "column": "length_m",
+            "message": "Value below semantic minimum",
+            "source": "length"
+          },
+          {
+            "code": "quality",
+            "column": "price",
+            "message": "Value below semantic minimum",
+            "source": "cost"
+          }
+        ],
+        "source_row": 5
+      }
+    ],
+    "changed_records": 2,
+    "contract_error": false,
+    "diff_truncated": false,
+    "evaluations": {
+      "candidate_batch_gate_passed": true,
+      "quality_policy_not_weakened": true,
+      "source_paths_exist": true,
+      "target_contract_compatible": true,
+      "typed_spec": true
+    },
+    "identity_change": false,
+    "new_rejections": 0,
+    "record_diff": [
+      {
+        "after": {
+          "category": "furniture",
+          "currency": "USD",
+          "length_m": 2.0,
+          "price": 1299.0,
+          "product_id": "P-002",
+          "product_name": "Shelf"
+        },
+        "before": {},
+        "dataset_id": "73d8099657784dbb88de596c3e686d1a",
+        "source_row": 2
+      },
+      {
+        "after": {
+          "category": "lighting",
+          "currency": "USD",
+          "length_m": 0.45,
+          "price": 49.0,
+          "product_id": "P-003",
+          "product_name": "Lamp"
+        },
+        "before": {},
+        "dataset_id": "73d8099657784dbb88de596c3e686d1a",
+        "source_row": 3
+      }
+    ],
+    "recovered_rows": 2,
+    "scope": "Replay of pinned source snapshots. This is not a guarantee for future data or an LLM accuracy benchmark.",
+    "side_effects": "No run, silver, quarantine, target contract or warehouse records were written by preview. Only this review report and audit event are saved.",
+    "source_hashes": {
+      "73d8099657784dbb88de596c3e686d1a": "480774aed4272d698ce82e64f1ade749c33d28d0207a9312f58e746c53fe93f8"
+    }
+  },
+  "activated_revision": 2,
+  "published": 5,
+  "rollback_revision": 3,
+  "warehouse_rows_after_config_rollback": 5,
+  "queued_notifications": [
+    {
+      "status": "pending",
+      "payload_json": "{\"event\": \"pipeline.version_activated\", \"at\": \"2026-11-03T06:10:32.280560+00:00\", \"run_id\": null, \"details\": {\"pipeline_id\": \"72aa8eb203d04093bac650098744f55a\", \"revision\": 2, \"change_id\": \"907b579e07d84ed49b49ee12d098582e\"}}"
+    },
+    {
+      "status": "pending",
+      "payload_json": "{\"event\": \"pipeline.version_rolled_back\", \"at\": \"2026-11-03T06:10:32.342013+00:00\", \"run_id\": null, \"details\": {\"pipeline_id\": \"72aa8eb203d04093bac650098744f55a\", \"revision\": 3, \"restored_from_revision\": 1}}"
+    }
+  ],
+  "live_model_called": false,
+  "real_email_sent": false
+}

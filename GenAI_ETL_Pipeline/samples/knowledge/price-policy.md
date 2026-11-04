@@ -1,0 +1,2 @@
+# Currency price formatting
+The currency_number transform parses USD-style price grouping such as $1,299.00 into 1299.00. European decimal formatting such as 1.299,00 is ambiguous under this contract and requires review. A supplier's selling_value can populate price when its samples are monetary amounts. Settlement currency must map to currency rather than product category. Price cannot be negative.

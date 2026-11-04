@@ -1,0 +1,7 @@
+Supplier product specification
+SKU: P-009
+Name: Oak dining table
+Length: 200cm
+Price: 499.00
+Currency: USD
+The table is excellent and the finish is good.

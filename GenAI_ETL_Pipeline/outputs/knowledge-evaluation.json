@@ -1,0 +1,35 @@
+{
+  "id": "bc476a7e075d47548b060dba05156e19",
+  "created_at": "2026-11-03T05:19:18.224972+00:00",
+  "metrics": {
+    "recall_at_3": 1.0,
+    "mrr_at_3": 1.0,
+    "exact_citation_rate": 1.0,
+    "injection_signal_rejection_rate": 1.0,
+    "unanswerable_abstention": true,
+    "fabricated_citation_blocked": true,
+    "mean_retrieval_ms": 2.80163333445671
+  },
+  "cases": [
+    {
+      "query": "length normalization units 200cm",
+      "expected_title": "length-policy",
+      "hit": true,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "query": "currency price grouping selling_value",
+      "expected_title": "price-policy",
+      "hit": true,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "query": "failure recovery quality gate immutable snapshot",
+      "expected_title": "recovery-runbook",
+      "hit": true,
+      "reciprocal_rank": 1.0
+    }
+  ],
+  "passed": true,
+  "scope": "Small synthetic regression set, extractive answers. These scores do not establish general model safety, semantic entailment or production accuracy."
+}

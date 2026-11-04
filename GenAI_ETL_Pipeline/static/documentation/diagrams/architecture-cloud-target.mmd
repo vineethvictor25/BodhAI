@@ -1,0 +1,22 @@
+flowchart TB
+  subgraph FUTURE[Proposed only: not deployed]
+    UI[Review console / named users] --> ID[TLS ingress / OIDC / RBAC]
+    ID --> API[Stateless API replicas]
+    API --> PG[(Managed PostgreSQL control plane)]
+    API --> Q[Durable queue]
+    Q --> W[Independent ETL / model / notification workers]
+    W --> PG
+    W --> OBJ[(Encrypted versioned object storage)]
+    W --> WH[(Chosen cloud warehouse)]
+    W --> EXT[Approved LLM / SMTP endpoints]
+    SEC[Managed secrets / workload identity] --> W
+    API --> OBS[Metrics / traces / alerts]
+    W --> OBS
+    RELEASE[CI gates / staging / immutable images / tested rollback]
+  end
+  subgraph LATER[Optional only after measured need]
+    VEC[pgvector: labelled semantic-retrieval benefit]
+    CACHE[Redis: repeated expensive requests]
+  end
+  W -. future candidate .-> VEC
+  API -. future candidate .-> CACHE

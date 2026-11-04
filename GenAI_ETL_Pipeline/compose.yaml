@@ -1,0 +1,44 @@
+services:
+  flowforge:
+    build: .
+    env_file: [.env]
+    ports: ["127.0.0.1:8765:8000"]
+    environment:
+      DATA_DIR: /app/data
+      PROVIDER: ${PROVIDER:-local}
+      APP_API_TOKEN: ${APP_API_TOKEN:?Set APP_API_TOKEN in .env for container access}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+      OPENAI_FALLBACK_MODEL: ${OPENAI_FALLBACK_MODEL:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-}
+      LLM_CONFIG_FILE: ${LLM_CONFIG_FILE:-config/llm_routes.yaml}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_ALLOW_HTTP_LOOPBACK: ${LLM_ALLOW_HTTP_LOOPBACK:-false}
+      API_ALLOWED_HOSTS: ${API_ALLOWED_HOSTS:-}
+      EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
+      EMAIL_NOTIFY_PUBLICATION: ${EMAIL_NOTIFY_PUBLICATION:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_TLS_MODE: ${SMTP_TLS_MODE:-starttls}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_TO: ${EMAIL_TO:-}
+    volumes: ["warehouse:/app/data"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  warehouse:

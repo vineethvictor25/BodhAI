@@ -1,0 +1,51 @@
+# No secrets or secret values belong here; use environment variable references.
+version: 1
+primary: openai_primary
+fallbacks: [openai_backup]
+allow_cross_provider_fallback: false
+fallback_on: [transport, timeout, rate_limit, server_error, model_unavailable, quota]
+max_attempts_per_route: 2
+max_calls: 6
+request_timeout_seconds: 45
+total_timeout_seconds: 120
+routes:
+  - name: openai_primary
+    provider: openai
+    model_env: OPENAI_MODEL
+    api_key_env: OPENAI_API_KEY
+    vision: true
+  - name: openai_backup
+    provider: openai
+    model_env: OPENAI_FALLBACK_MODEL
+    api_key_env: OPENAI_API_KEY
+    vision: false
+  - name: gemini_backup
+    provider: gemini
+    model_env: GEMINI_MODEL
+    api_key_env: GEMINI_API_KEY
+    vision: true
+  - name: groq_backup
+    provider: groq
+    model_env: GROQ_MODEL
+    api_key_env: GROQ_API_KEY
+    vision: false
+    structured_mode: json_object
+  - name: deepseek_backup
+    provider: deepseek
+    model_env: DEEPSEEK_MODEL
+    api_key_env: DEEPSEEK_API_KEY
+    vision: false
+    structured_mode: json_object
+  - name: claude_backup
+    provider: anthropic
+    model_env: ANTHROPIC_MODEL
+    api_key_env: ANTHROPIC_API_KEY
+    vision: true
+  # For a self-hosted server, explicitly review the endpoint and its data policy.
+  # - name: hosted_backup
+  #   provider: openai_compatible
+  #   model_env: LLM_MODEL
+  #   api_key_env: LLM_API_KEY
+  #   base_url: https://your-approved-server.example/v1
+  #   vision: false
+  #   structured_mode: json_schema

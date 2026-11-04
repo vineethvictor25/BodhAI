@@ -1,0 +1,33 @@
+flowchart TB
+  UI[Browser console / CLI] --> API[FastAPI / validated data API boundary]
+  subgraph APP[Implemented: one local application process]
+    API --> ING[Ingest files / HTTPS API / staged documents]
+    API --> AI[Recipe / mapping / extraction assistance]
+    API --> CH[Conversation / diff / human review / versions]
+    API --> EXEC[Deterministic transform and DQ engine]
+    REF[Reviewed references / SQLite FTS5] -. optional context .-> AI
+    GUARD[Typed operations / source and policy checks] --> CH
+    CH --> PRE[Pure preview: zero publication]
+    PRE --> HUMAN[Human approves exact candidate]
+    HUMAN --> ACTIVE[Activate immutable version]
+    ACTIVE --> AUTH[Separate execution authorization]
+    AUTH --> EXEC
+    EXEC --> GATE{DQ and target contract pass?}
+    GATE -->|yes| GOLD[Atomic warehouse upsert]
+    GATE -->|no| HOLD[No new-batch publication]
+    EXEC --> SILVER[Silver and quarantine]
+    DB[(SQLite WAL: sources / control / audit / knowledge)]
+    ING --> DB
+    CH --> DB
+    GOLD --> DB
+    SILVER --> DB
+    REF --> DB
+    EVAL[Local regression checks] --> DB
+    CH --> OUTBOX[Transactional notification outbox]
+    OUTBOX --> MAIL[Optional in-process SMTP worker]
+  end
+  AI -. schema-constrained proposals .-> LLM[Optional configured LLM routes]
+  MAIL -. TLS / bounded delivery retries .-> SMTP[Configured SMTP provider]
+  RB[Approved configuration rollback] --> ACTIVE
+  NOTE[Rollback creates a new config version; existing warehouse data is not reverted]
+  RB -.-> NOTE

@@ -1,0 +1,36 @@
+# Local credentials and environment files
+.env
+.env.*
+!.env.example
+
+# Python environments, bytecode, and test/coverage caches
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local database and runtime state
+data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.log
+*.pid
+work/
+
+# Generated distribution archive and duplicate local config copy
+outputs/FlowForge-GenAI-ETL.zip
+config/llm_routes - Copy.yaml
+
+# Operating-system/editor noise
+.DS_Store
+Thumbs.db

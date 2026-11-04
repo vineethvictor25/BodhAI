@@ -1,0 +1,7 @@
+sku,title,length,cost,ccy,type
+ P-001 ,Desk,Length = 200cm,129.99,usd,Furniture
+P-002,Shelf,2m,"$1,299.00",USD,Furniture
+P-003,Lamp,450mm,$49.00,USD,Lighting
+P-004,Bench,1.5m,199.00,,Furniture
+P-005,Broken item,-2m,-10,USD,Furniture
+P-006,Chair,100cm,89.50,USD,Furniture

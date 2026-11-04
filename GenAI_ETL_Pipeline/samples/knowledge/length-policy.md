@@ -1,0 +1,2 @@
+# Product length normalization
+Product length values must include explicit units. The length_m transform converts 200cm to 2m, 450mm to 0.45m, inches with a factor of 0.0254, and feet with a factor of 0.3048. Unitless measurements require review. Negative lengths are semantic anomalies and must be quarantined under the target contract. A supplier's package_span can map to length_m when sample values show explicit supported length units.

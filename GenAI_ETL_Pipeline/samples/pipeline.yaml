@@ -1,0 +1,91 @@
+name: product_catalog
+description: ''
+target: products
+columns:
+- name: product_id
+  dtype: string
+  required: true
+  aliases:
+  - sku
+  - item_id
+  - product.code
+  transforms:
+  - trim
+  - upper
+  minimum: null
+  maximum: null
+  allowed: []
+  default: null
+- name: product_name
+  dtype: string
+  required: true
+  aliases:
+  - name
+  - title
+  - product.title
+  transforms:
+  - trim
+  minimum: null
+  maximum: null
+  allowed: []
+  default: null
+- name: length_m
+  dtype: number
+  required: false
+  aliases:
+  - length
+  - dimensions.length
+  - size
+  transforms:
+  - length_m
+  minimum: 0.001
+  maximum: 100.0
+  allowed: []
+  default: null
+- name: price
+  dtype: number
+  required: true
+  aliases:
+  - cost
+  - pricing.amount
+  - amount
+  transforms:
+  - currency_number
+  minimum: 0.0
+  maximum: 1000000.0
+  allowed: []
+  default: null
+- name: currency
+  dtype: string
+  required: false
+  aliases:
+  - ccy
+  - pricing.currency
+  transforms:
+  - trim
+  - upper
+  minimum: null
+  maximum: null
+  allowed:
+  - USD
+  - EUR
+  - INR
+  - GBP
+  default: USD
+- name: category
+  dtype: string
+  required: false
+  aliases:
+  - type
+  - product.category
+  transforms:
+  - trim
+  - lower
+  minimum: null
+  maximum: null
+  allowed: []
+  default: null
+primary_key: product_id
+max_reject_ratio: 0.2
+mapping_threshold: 0.82
+mapping_overrides: {}

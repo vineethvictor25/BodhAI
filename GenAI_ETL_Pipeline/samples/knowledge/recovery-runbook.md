@@ -1,0 +1,2 @@
+# Pipeline failure recovery
+A failed quality gate publishes zero records from the new batch while preserving accepted silver records and quarantined source rows. A reviewed transformation repair creates a new run using the original immutable source snapshot. The existing reject threshold and other validation rules remain in force. Transient network failures use bounded retries and idempotency keys. Authorization failures and quota exhaustion need operator action. Proposals require human review before publication.
