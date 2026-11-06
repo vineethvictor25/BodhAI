@@ -66,17 +66,38 @@ def validate_source(name,rows):
     return {'profile':observed,'contract_revision':row['revision'],'drift':drift,'drift_policy':contract.drift_policy,'schema_action':'accept_observed_extract' if changed and contract.drift_policy=='evolve' else 'alert' if changed else 'unchanged','reconciliation':{'expected_rows':contract.expected_rows,'actual_rows':len(rows),'control_total':total},'declarations':{'owner':contract.owner,'update_pattern':contract.update_pattern,'ingestion_pattern':contract.ingestion_pattern,'classification':contract.classification}}
 
 
+def validate_source_summary(name,row_count,schema,control_total=None):
+    with store.db() as conn:row=conn.execute('SELECT * FROM source_contracts WHERE source_name=?',(name,)).fetchone()
+    if row is None:return {'contract_revision':None,'drift':None,'reconciliation':'no control file/contract supplied'}
+    contract=SourceContract.model_validate_json(row['contract_json']);expected=contract.expected_schema
+    if contract.ingestion_pattern!='full':raise ValueError('This file/API runtime supports full snapshots; watermark, CDC and stream ingestion need a separately configured connector')
+    drift={'added':sorted(set(schema)-set(expected)) if expected else [],'dropped':sorted(set(expected)-set(schema)),'type_changes':{k:{'expected':expected[k],'actual':schema[k]} for k in expected.keys()&schema.keys() if not set(schema[k]).issubset(expected[k])},'order_changed':bool(contract.column_order and contract.column_order!=list(schema))}
+    changed=any(drift.values())
+    if changed and contract.drift_policy=='fail':raise ValueError('Source schema drift blocked ingestion; inspect the source contract and profile')
+    if contract.expected_rows is not None and contract.expected_rows!=row_count:raise ValueError('Source-to-landing row-count reconciliation failed')
+    total=None
+    if contract.control_total is not None:
+        if control_total is None:raise ValueError('Source control-total column cannot be evaluated')
+        total=control_total
+        if abs(total-contract.control_total)>contract.control_tolerance:raise ValueError('Source-to-landing control-total reconciliation failed')
+    return {'contract_revision':row['revision'],'drift':drift,'drift_policy':contract.drift_policy,'schema_action':'accept_observed_extract' if changed and contract.drift_policy=='evolve' else 'alert' if changed else 'unchanged','reconciliation':{'expected_rows':contract.expected_rows,'actual_rows':row_count,'control_total':total},'declarations':{'owner':contract.owner,'update_pattern':contract.update_pattern,'ingestion_pattern':contract.ingestion_pattern,'classification':contract.classification}}
+
+
 def dataset_profile(dataset_id):
-    data=store.get_dataset(dataset_id);result=profile(data['rows'])
+    data=store.get_dataset_info(dataset_id);rows=store.get_dataset_sample(dataset_id);result=profile(rows)
+    if data['row_count']>len(rows):
+        result['row_count']=data['row_count']
+        result['scope']=f"Column statistics sampled from the first {len(rows):,} rows of {data['row_count']:,}; row count is exact."
     from .privacy import sensitive_source_paths
     protected=sensitive_source_paths(data['metadata'])
     for column in result['columns']:
         if column['column'] in protected:column.update({'protected':True,'cardinality':None,'minimum':None,'maximum':None,'note':'Value statistics withheld for sensitive columns'})
     with store.db() as conn:
-        previous=conn.execute('SELECT id,rows_json,created_at FROM datasets WHERE name=? AND created_at<? ORDER BY created_at DESC LIMIT 1',(data['name'],data['created_at'])).fetchone()
+        previous=conn.execute('SELECT id,rows_json,metadata_json,created_at FROM datasets WHERE name=? AND created_at<? ORDER BY created_at DESC LIMIT 1',(data['name'],data['created_at'])).fetchone()
     trend=None
     if previous:
         seconds=(datetime.fromisoformat(data['created_at'])-datetime.fromisoformat(previous['created_at'])).total_seconds()
-        old=json.loads(previous['rows_json']);delta=len(data['rows'])-len(old)
-        trend={'previous_dataset_id':previous['id'],'previous_rows':len(old),'row_delta':delta,'rows_per_day':delta*86400/seconds if seconds>0 else None,'note':'Difference between same-named uploaded snapshots; not a measured source-system growth rate.'}
+        old_count=json.loads(previous['metadata_json']).get('row_count',len(json.loads(previous['rows_json'])))
+        delta=data['row_count']-old_count
+        trend={'previous_dataset_id':previous['id'],'previous_rows':old_count,'row_delta':delta,'rows_per_day':delta*86400/seconds if seconds>0 else None,'note':'Difference between same-named uploaded snapshots; not a measured source-system growth rate.'}
     return {'dataset_id':dataset_id,'name':data['name'],**result,'snapshot_trend':trend,'source_contract':data['metadata'].get('extraction',{}),'inferred_update_pattern':'unknown; declare append-only or mutable in the source contract'}

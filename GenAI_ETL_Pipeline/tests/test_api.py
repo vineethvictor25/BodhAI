@@ -65,7 +65,8 @@ def test_upload_accepts_more_than_10000_records_and_reports_limit(client):
     response = client.post("/api/datasets/upload", files={"file": ("large.csv", raw)})
     assert response.status_code == 200, response.text
     assert response.json()["row_count"] == 10001
-    assert client.get("/api/config").json()["max_rows_per_source"] == 25000
+    assert client.get("/api/config").json()["max_upload_bytes"] == 30 * 1024 * 1024
+    assert client.get("/api/config").json()["max_rows_per_source"] == 25_000_000
 
 
 def test_path_names_are_data_only(client):

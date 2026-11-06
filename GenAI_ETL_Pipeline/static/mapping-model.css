@@ -1,0 +1,27 @@
+.mapping-model{margin:16px 0;padding:16px;border:1px solid var(--line);border-radius:9px;background:#f8fbfa}
+.mapping-model figcaption,.model-lineage-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mapping-model figcaption>strong{font-size:14px}
+.mapping-model .hint{margin:10px 0}
+.model-lineage{display:grid;grid-template-columns:minmax(150px,2fr) minmax(0,3fr);gap:12px;align-items:start}
+.model-target,.model-node,.model-sources{min-width:0;background:#fff;border:1px solid var(--line);border-radius:7px}
+.model-table-head,.model-node,.model-lineage-head{padding:8px 10px;overflow-wrap:anywhere}
+.model-table-head,.model-lineage-head{background:var(--teal-light);border-radius:6px 6px 0 0}
+.model-table-head small,.model-node small,.model-join-link small{display:block;color:#526770;font-size:10px}
+.model-node small:empty{display:none}
+.model-node strong{display:block;font-size:12px}
+.mapping-model code,.model-lineage-head span{overflow-wrap:anywhere;font-size:11px}
+.model-fields{max-height:300px;overflow:auto}
+.model-fields button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:7px 9px;border:0;border-top:1px solid var(--line);border-radius:0;text-align:left;font:11px/1.4 Consolas,monospace;overflow-wrap:anywhere}
+.model-fields button small{flex:none;font:10px 'Segoe UI',sans-serif}
+.model-fields button b{color:#115e55}
+.model-fields button[aria-pressed=true]{color:#115e55;background:var(--teal-light);box-shadow:inset 3px 0 var(--teal)}
+.model-fields button:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
+.model-sources ul{list-style:none;margin:0;padding:8px;display:grid;gap:6px;max-height:335px;overflow:auto}
+.model-join,.model-route{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center}
+.model-join{margin-top:10px}
+.model-route{grid-template-columns:minmax(0,1.3fr) 25px minmax(0,1fr)}
+.mapping-model svg{display:block;width:25px;height:18px;margin:auto;fill:none;stroke:var(--teal);stroke-width:1.7}
+.model-join-link{text-align:center;font-size:11px}
+.model-endpoint{padding:5px;border-radius:4px;background:var(--teal-light)}
+.model-no-link,.model-unmapped{color:#695944;text-align:center}
+@media(max-width:860px){.model-lineage{grid-template-columns:1fr}.model-fields{max-height:180px}}

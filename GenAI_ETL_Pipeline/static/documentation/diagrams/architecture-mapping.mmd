@@ -1,0 +1,12 @@
+flowchart LR
+  S[Selected snapshots and business instructions] --> P[Bounded privacy-filtered profiles]
+  P -. approved model request .-> A[Configured AI proposes field equivalences, schema, keys and strategy]
+  A --> V[Validate source paths and coverage]
+  V --> K[Full-snapshot key checks and disk-backed join preview]
+  K --> R[Review field matches, key evidence and data model]
+  R -->|Unresolved| B[Blocked draft: refine instructions or selection]
+  R -->|Append| AP[Review each source-to-target mapping]
+  R -->|Join| J[Stage reviewed join and map combined source]
+  AP --> H[Human approves exact mappings]
+  J --> H
+  H --> X[Separately authorized ETL run and quality gate]

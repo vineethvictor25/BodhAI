@@ -12,12 +12,12 @@ Cloud/warehouse dropdowns validate destination-specific configuration and export
 - [All 49 engineering requirements: exact coverage](docs/ENGINEERING_COVERAGE.md)
 - [Operating runbook](docs/ETL_RUNBOOK.md)
 
-The full local suite passes 171 tests. A headless browser verified the four-format sample and destination configuration. Cloud connectors, private network deployment, full RBAC, CDC/streams and production operations remain explicit integration work. Existing data/backups are not retroactively protected.
+The full local suite passes 197 tests. A headless browser verified the four-format sample and destination configuration. Cloud connectors, private network deployment, full RBAC, CDC/streams and production operations remain explicit integration work. Existing data/backups are not retroactively protected.
 
 
 ## Current documentation (release 1.5)
 
-Start with [System guide](docs/SYSTEM_GUIDE.md) and [Architecture](docs/ARCHITECTURE.md). The architecture SVGs and editable Mermaid sources are in docs/diagrams/. The browser view is docs/diagrams/architecture.html. Current implementation and proposed cloud target are clearly separated.
+Start with [System guide](docs/SYSTEM_GUIDE.md), [Multi-source mapping](docs/MULTI_SOURCE_MAPPING.md), and [Architecture](docs/ARCHITECTURE.md). The [mapping architecture](docs/diagrams/architecture-mapping.svg) shows AI field matching, full-snapshot key checks and the review boundary. The architecture SVGs and editable Mermaid sources are in docs/diagrams/. The browser view is docs/diagrams/architecture.html. Current implementation and proposed cloud target are clearly separated.
 
 
 A runnable, production-style reference implementation with a FastAPI backend, a browser console, a local SQLite warehouse, governed transformation recipes, and an optional OpenAI multimodal adapter. Requires Python 3.11+.
@@ -70,7 +70,7 @@ The demo uses synthetic sample data. It changes only this project's local databa
 | Requested capability | Implemented behavior | Boundary |
 |---|---|---|
 | Natural-language pipeline generation | Validated JSON plan; downloadable executable Python runner, YAML recipe and SQL DDL | Local mode is a bounded product recipe; optional live AI handles other scalar schemas. Sources are selected at execution. Spark and Airflow are not installed. |
-| Dynamic schema mapping | Live natural-language + sample-aware semantic mapping, editable source selections, persisted approvals, per-source bindings; offline aliases/fuzzy preview remains available | Confidence is model-reported. No join discovery or computed mappings. Unknown paths fail validation; approved mappings are bound to source snapshots and target identity. |
+| Dynamic schema mapping | Live natural-language + sample-aware semantic mapping, editable source selections, persisted approvals, per-source bindings; offline aliases/fuzzy preview remains available | Confidence is model-reported. Joint discovery proposes append or a two-source join, reports equivalent fields and checks key candidates. Arbitrary computed mapping expressions are outside this workflow. Unknown paths fail validation; approved mappings are bound to source snapshots and target identity. |
 | Unstructured extraction / ETAI | TXT/MD and text-layer PDFs; attributes, summary, keyword sentiment and evidence; live semantic extraction and image input | PNG/JPEG vision requires a model and credentials. Scanned PDFs need image export first. Extraction is staged for human review. |
 | Cleaning and normalization | `200cm` and `2m` → `2.0`; US currency parsing, trimming, casing, explicitly configured defaults, type/range/enumeration/uniqueness checks | No invented missing facts. Units must be explicit. Context filling is an auditable contract default. Semantic anomalies use contract bounds, not statistical learning. |
 | Legacy SQL translation | SQLGlot AST translation from SQL Server/Oracle/MySQL/PostgreSQL/Hive/Spark to Snowflake/BigQuery/Redshift/Spark/DuckDB | Procedural scripts are flagged for manual migration. Syntax translation does not establish semantic equivalence or live warehouse execution. |
@@ -112,7 +112,7 @@ OPENAI_MODEL=your-available-model
 
 Choose a model available to your account that supports structured output and, for images, vision. Restart the server. The key stays on the backend and is never returned to the browser. Requests use the Responses API, JSON schema output, `store=false`, bounded retries and Pydantic validation. Invalid or incomplete responses fail closed. Selecting live mode does not silently fall back to local mode on an error.
 
-Live mode sends the request text, document content or image to OpenAI. Use only data you are authorized to send. This implementation does not automatically redact PII. The adapter has unit tests using mocked provider responses. A live semantic-mapping verification was attempted with synthetic sample data and received HTTP 429, so successful live inference remains unverified. Check API rate limits and project quota before retrying.
+The OpenAI configuration above is one option. The model gateway also supports Gemini, Groq, DeepSeek, Anthropic, and approved compatible endpoints. Mapping sends authorized instructions and bounded column profiles to the selected route, with detected or declared sensitive samples withheld. Live Groq discovery and mapping were verified with synthetic data. Check [model routing](docs/MULTI_MODEL_ROUTING.md) for configuration and rate-limit behavior.
 
 Reference: [OpenAI Responses API](https://developers.openai.com/api/reference/resources/responses/methods/create), [image input guide](https://developers.openai.com/api/docs/guides/images-vision?api-mode=responses).
 
@@ -175,4 +175,4 @@ Applied version/mapping/remediation changes queue metadata-only email events tra
 
 ## v1.4 — multiple models and controlled fallback
 
-PROVIDER now accepts local, openai, anthropic, gemini, groq, deepseek, openai_compatible or router. Use PROVIDER=router with config/llm_routes.yaml to select a primary and ordered backup models, including multiple models from one provider. Keys stay in environment variables. Cross-provider/endpoint fallback needs explicit authorization. Availability failures may retry/fail over; refusals, incomplete responses and invalid output stop. See docs/MULTI_MODEL_ROUTING.md for setup, policy, protocol limits and examples. Existing .env files are not automatically migrated or rewritten.
+PROVIDER now accepts local, openai, anthropic, gemini, groq, deepseek, openai_compatible or router. Use PROVIDER=router with config/llm_routes.yaml to select a primary and ordered backup models, including multiple models from one provider. Keys stay in environment variables. Cross-provider/endpoint fallback needs explicit authorization. Availability failures may retry or fail over under the configured policy. Mapping can make one same-route correction within the existing budgets for malformed output or incomplete append coverage. Refusals stop immediately. See docs/MULTI_MODEL_ROUTING.md for setup, policy, protocol limits and examples. Existing .env files are not automatically migrated or rewritten.

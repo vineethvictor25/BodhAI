@@ -24,7 +24,11 @@ bind('stageMedallionSample',async()=>{
 bind('mergeFiles',async()=>{
  const ids=[...document.querySelectorAll('#mergeSelection input:checked')].map(el=>el.value);
  const result=await api('datasets/merge',{name:$('mergeName').value,dataset_ids:ids,mode:$('mergeMode').value,left_key:$('mergeLeft').value,right_key:$('mergeRight').value});
- await refresh();await loadMedallion();$('mergeStatus').textContent=`Created ${result.name}: ${result.row_count} records. Select this dataset in Pipeline studio; do not also select its parents.`;
+ await refresh();await loadMedallion();
+ const impact=result.merge_impact;
+ const mode=impact.mode.replaceAll('_',' ');
+ const relationship=impact.relationship_cardinality ? ` (${impact.relationship_cardinality.replaceAll('_',' ')})` : '';
+ $('mergeStatus').textContent=`Created ${result.name} using ${mode}${relationship}. ${result.row_count.toLocaleString()} records. Select the combined dataset in Pipeline studio.`;
 });
 bind('profileDatasetButton',async()=>{
  const id=$('profileDataset').value;if(!id)throw Error('Stage a source first.');

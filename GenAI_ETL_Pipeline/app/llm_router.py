@@ -177,6 +177,7 @@ def _http_category(response):
         raw_code=error.get('code')
         code=raw_code if isinstance(raw_code,str) else error.get('status') or error.get('type')
     except (ValueError,AttributeError):code=None
+    if response.status_code == 400 and code == 'json_validate_failed':return 'invalid_output'
     if response.status_code==429:
         return 'quota' if code in ('insufficient_quota','billing_hard_limit_reached','billing_not_active') else 'rate_limit'
     if response.status_code==408:return 'timeout'
@@ -185,7 +186,7 @@ def _http_category(response):
     return 'authentication' if response.status_code in (401,403) else 'request_error'
 
 
-def structured(task,payload,schema,image=None,mime='image/png'):
+def structured(task,payload,schema,image=None,mime='image/png',*,repair_invalid_output=False, result_correction=None):
     from .privacy import ai_payload
     ai_payload(payload)
     if len(payload)>60000:raise ValueError('AI input exceeds 60,000 characters; split the request')
@@ -199,6 +200,8 @@ def structured(task,payload,schema,image=None,mime='image/png'):
         if not route.resolved_model() or route.require_api_key and not os.getenv(route.api_key_env):
             history.append({'route':route_name,'provider':route.provider,'outcome':'skipped_unconfigured'});continue
         url,headers,body=_request(route,task,payload,schema,image,mime)
+        repairing = False
+        partial = None
         for attempt in range(config.max_attempts_per_route):
             remaining=deadline-time.monotonic()
             if calls>=config.max_calls or remaining<=0:raise ModelError('LLM call/time budget exhausted; no plan was applied','budget',history)
@@ -210,18 +213,53 @@ def structured(task,payload,schema,image=None,mime='image/png'):
                 category='timeout' if isinstance(error,httpx.TimeoutException) else 'transport'
             else:
                 if response.status_code==200:
-                    try:text=_decode(route,response.json());result=schema.model_validate_json(text)
+                    try:
+                        envelope = response.json()
+                        result = schema.model_validate_json(_decode(route, envelope))
                     except ModelError as error:
-                        history.append({'route':route_name,'provider':route.provider,'outcome':error.category,'attempt':attempt+1})
-                        error.attempts=list(history)
-                        raise
+                        category = error.category
+                        if category != 'invalid_output':
+                            history.append({'route':route_name,'provider':route.provider,'outcome':category,'attempt':attempt+1})
+                            error.attempts = list(history)
+                            raise
                     except (ValueError,TypeError,KeyError,AttributeError):
-                        history.append({'route':route_name,'provider':route.provider,'outcome':'invalid_output','attempt':attempt+1})
-                        raise ModelError('AI returned invalid structured output; no plan was applied','invalid_output',history) from None
-                    history.append({'route':route_name,'provider':route.provider,'outcome':'success','attempt':attempt+1})
-                    return result,{'provider':route.provider,'model':route.resolved_model(),'route':route_name,'response_id':response.json().get('id'),'usage':response.json().get('usage',{}),'fallback_used':route_name!=config.primary,'attempts':history}
-                category=_http_category(response)
+                        category = 'invalid_output'
+                    else:
+                        metadata = {
+                            'provider': route.provider, 'model': route.resolved_model(), 'route': route_name,
+                            'response_id': envelope.get('id'), 'usage': envelope.get('usage', {}),
+                            'fallback_used': route_name != config.primary, 'attempts': history,
+                        }
+                        correction = result_correction(result) if result_correction and not repairing else None
+                        if correction and attempt+1 < config.max_attempts_per_route and calls < config.max_calls:
+                            partial = (result, metadata)
+                            history.append({'route':route_name,'provider':route.provider,'outcome':'incomplete_mapping','attempt':attempt+1})
+                            repairing = True
+                            url,headers,body = _request(route,task+' '+correction,payload,schema,image,mime)
+                            continue
+                        history.append({'route':route_name,'provider':route.provider,'outcome':'success','attempt':attempt+1})
+                        return result, metadata
+                else:
+                    category = _http_category(response)
             history.append({'route':route_name,'provider':route.provider,'outcome':category,'attempt':attempt+1})
+            if category == 'invalid_output':
+                if repair_invalid_output and not repairing and attempt+1 < config.max_attempts_per_route and calls < config.max_calls:
+                    repairing = True
+                    correction = (' Return one complete JSON object matching the response schema. Copy exact field names, '
+                                  'IDs and paths from the input. Use null for missing bindings. Arrays must contain '
+                                  'only items of the specified type, without separators or placeholder strings.')
+                    url,headers,body = _request(route,task+correction,payload,schema,image,mime)
+                    continue
+                raise ModelError('The model did not return a valid mapping response.' if repair_invalid_output else
+                                 'AI returned invalid structured output; no plan was applied',category,history)
+            if repairing:
+                if category == 'rate_limit':
+                    if partial is not None:
+                        return partial
+                    delay = response.headers.get('Retry-After', '')
+                    wait = f'Wait {int(delay)} seconds before retrying.' if delay.isascii() and delay.isdigit() and len(delay) <= 6 and int(delay) > 0 else 'Wait briefly before retrying.'
+                    raise ModelError(f'{route.provider.title()} rate-limited the mapping request. {wait}', category, history)
+                raise ModelError('The model could not complete the mapping retry ('+category+').',category,history)
             if category not in config.fallback_on:raise ModelError('AI request failed ('+category+'); check configuration. No fallback was attempted.','request_error',history)
             if category in ('quota','model_unavailable'):break
             if attempt+1<config.max_attempts_per_route:

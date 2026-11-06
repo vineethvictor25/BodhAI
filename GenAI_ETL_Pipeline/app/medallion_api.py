@@ -8,7 +8,7 @@ from fastapi.responses import Response
 from pydantic import Field
 from . import store
 from .engine import transform_batch, ConflictError
-from .ingest import save_rows, MAX_ROWS
+from .merge_engine import merge, preview_merge
 from .mapping import flatten
 from .models import StrictModel, RunRequest
 from .profiling import SourceContract,dataset_profile
@@ -26,45 +26,6 @@ class DecryptRequest(StrictModel):
     run_id:str=Field(pattern=r'^[0-9a-f]{32}$')
     column:str=Field(pattern=r'^[a-z][a-z0-9_]{0,62}$')
     row_numbers:list[int]=Field(min_length=1,max_length=20)
-
-
-def merge(body):
-    if len(set(body.dataset_ids))!=len(body.dataset_ids):raise ValueError('Select distinct source datasets')
-    sources=[store.get_dataset(i) for i in body.dataset_ids]
-    from .privacy import decrypt_source
-    for source in sources:source['rows']=decrypt_source(source['rows'])
-    if body.mode=='append':
-        fields=set(sources[0]['rows'][0])
-        if any(set(r)!=fields for d in sources for r in d['rows']):
-            raise ValueError('Append requires identical top-level columns. For different schemas select original files in Pipeline studio; per-source mappings reconcile them before append.')
-        rows=[r for d in sources for r in d['rows']]
-    else:
-        if len(sources)!=2 or not body.left_key or not body.right_key:raise ValueError('Join requires exactly two sources and both join keys')
-        def key(row,path):
-            flat=flatten(row)
-            if path not in flat:raise ValueError('Join key does not exist in every source row')
-            value=flat[path]
-            if isinstance(value,(dict,list,bool)):raise ValueError('Join keys must be scalar strings or numbers')
-            # Deliberately do not silently coerce identifiers such as 001 to 1.
-            return (type(value).__name__,value) if value is not None else None
-        right={}
-        for row in sources[1]['rows']:
-            k=key(row,body.right_key)
-            if k is None:continue
-            if k in right:raise ValueError('Right join key must be unique; many-to-many joins are unsupported')
-            right[k]=row
-        rows=[]
-        for row in sources[0]['rows']:
-            match=right.get(key(row,body.left_key))
-            if match is not None or body.mode=='left_join':rows.append({'left':row,'right':match or {}})
-    if not rows or len(rows)>MAX_ROWS:raise ValueError(f'Merge must produce 1–{MAX_ROWS:,} rows')
-    if len(json.dumps(rows).encode())>52428800:raise ValueError('Merged data exceeds 50MB local limit')
-    ref=next((s['metadata'].get('privacy',{}).get('key_reference') for s in sources if s['metadata'].get('privacy',{}).get('key_reference')),None)
-    from .privacy import walk
-    present={p for r in rows for p,_ in walk(r)}
-    from .privacy import sensitive_source_paths
-    protected_paths={('left.' if i==0 else 'right.' if body.mode!='append' else '')+p if body.mode!='append' else p for i,s in enumerate(sources) for p in sensitive_source_paths(s['metadata'])}
-    return save_rows(rows,body.name,metadata={'kind':'merge','mode':body.mode,'parents':[{'dataset_id':s['id'],'sha256':s['sha256']} for s in sources],'left_key':body.left_key,'right_key':body.right_key,'pii_key_ref':ref,'pii_columns':sorted(present&protected_paths)})
 
 
 def layer_rows(run_id,layer):
@@ -114,6 +75,9 @@ def router(authorize):
     @api.post('/datasets/merge')
     def merge_sources(body:MergeRequest):return merge(body)
 
+    @api.post('/datasets/merge/preview')
+    def merge_preview(body:MergeRequest):return preview_merge(body)
+
     @api.get('/datasets/{dataset_id}/profile')
     def source_profile(dataset_id:str):return dataset_profile(dataset_id)
 
@@ -143,6 +107,12 @@ def router(authorize):
         with store.db() as conn:rows=conn.execute('SELECT id,source_name,started_at,finished_at,status,sha256,dataset_id,details_json FROM extraction_batches ORDER BY started_at DESC LIMIT 100').fetchall()
         return [{**{k:r[k] for k in r.keys() if k!='details_json'},'details':json.loads(r['details_json'])} for r in rows]
 
+    @api.get('/extractions/{batch_id}')
+    def extraction_status(batch_id:str):
+        with store.db() as conn:r=conn.execute('SELECT id,source_name,started_at,finished_at,status,dataset_id,details_json FROM extraction_batches WHERE id=?',(batch_id,)).fetchone()
+        if r is None:raise HTTPException(404,'Upload progress was not found')
+        return {**{k:r[k] for k in r.keys() if k!='details_json'},'details':json.loads(r['details_json'])}
+
     @api.get('/extractions/{batch_id}/raw')
     def rejected_extract(batch_id:str):
         with store.db() as conn:r=conn.execute('SELECT content FROM extraction_batches WHERE id=?',(batch_id,)).fetchone()
@@ -169,6 +139,8 @@ def router(authorize):
 
     @api.post('/medallion/preview')
     def preview(body:RunRequest):
+        if sum(store.get_dataset_info(dataset_id)['row_count'] for dataset_id in body.dataset_ids)>25_000:
+            raise ValueError('Preview is limited to 25,000 total rows; streamed pipeline runs remain available for larger sources')
         datasets=[store.get_dataset(i) for i in body.dataset_ids]
         approved=None
         if body.approved_mapping_id:
@@ -196,13 +168,16 @@ def router(authorize):
 
     @api.get('/datasets/{dataset_id}/bronze')
     def bronze(dataset_id:str):
-        data=store.get_dataset(dataset_id)
+        data=store.get_dataset_info(dataset_id)
         with store.db() as conn:obj=conn.execute('SELECT representation,byte_count FROM bronze_objects WHERE dataset_id=?',(dataset_id,)).fetchone()
-        return {'dataset_id':dataset_id,'sha256':data['sha256'],'name':data['name'],'rows':len(data['rows']),'metadata':data['metadata'],'original_available':bool(obj and obj['representation']=='original_bytes'),'stored_object':dict(obj) if obj else None,'preview':data['rows'][:20]}
+        preview=[]
+        if data['row_count']:
+            _,preview=next(store.iter_dataset_rows(dataset_id,batch_size=20))
+        return {'dataset_id':dataset_id,'sha256':data['sha256'],'name':data['name'],'rows':data['row_count'],'metadata':data['metadata'],'original_available':bool(obj and obj['representation']=='original_bytes'),'stored_object':dict(obj) if obj else None,'preview':preview[:20]}
 
     @api.get('/datasets/{dataset_id}/bronze/raw')
     def raw_bronze(dataset_id:str):
-        store.get_dataset(dataset_id)
+        store.get_dataset_info(dataset_id)
         with store.db() as conn:obj=conn.execute('SELECT content FROM bronze_objects WHERE dataset_id=?',(dataset_id,)).fetchone()
         if obj is None:raise ValueError('Original bytes were not retained for this older dataset; upload again to capture Bronze')
         return Response(bytes(obj[0]),media_type='application/octet-stream',headers={'Content-Disposition':'attachment; filename="bronze-source.bin"'})

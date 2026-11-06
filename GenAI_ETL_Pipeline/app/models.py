@@ -72,6 +72,7 @@ class BusinessContext(StrictModel):
 
 class LoadStrategy(StrictModel):
     mode:Literal['upsert','append','full_refresh','partition_overwrite','scd2']='upsert'
+    duplicate_policy:Literal['skip','update']='skip'
     partition_column:str|None=None
     partition_values:list[str]=Field(default_factory=list,max_length=31)
     tracked_columns:list[str]=Field(default_factory=list,max_length=50)

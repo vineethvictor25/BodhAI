@@ -4,7 +4,7 @@
 
 
 **Release:** 1.5.0
-**Updated:** 3 November 2026
+**Updated:** 6 November 2026
 **Project:** `GenAI_ETL_Pipeline`
 **Status:** Working local reference implementation; not production-ready.
 
@@ -32,7 +32,7 @@ The defining boundary is **proposal versus execution**. Model output is a struct
 | Capability | Implemented | Important limit |
 |---|---|---|
 | Pipeline generation | JSON specification, executable Python runner, YAML recipe and reference SQL DDL | Offline compiler is a bounded product-catalog recipe; Spark/Airflow execution is not installed. |
-| Schema mapping | Offline aliases/fuzzy matches; optional live sample-aware semantic mapping with review | No join discovery or computed mapping expressions. Model confidence is not a calibrated probability. |
+| Schema mapping | Offline aliases/fuzzy matches; optional live sample-aware semantic mapping with review | Joint AI discovery covers field equivalences, key candidates and append or two-source join proposals. Local checks validate proposed keys; business meaning needs review. |
 | Unstructured extraction | Labelled text/text PDFs locally; optional semantic extraction and image vision | Scanned PDFs require page-image export; extraction is staged for review. |
 | Cleaning and DQ | Unit conversion, number/currency parsing, casing, explicit defaults, bounds, allowed values, required values and key uniqueness | Defaults are explicit contract values; missing facts are not invented. |
 | Legacy translation | SQLGlot declarative dialect translation | Stored procedures/control flow require manual migration and real-target semantic tests. |
@@ -54,7 +54,7 @@ See `diagrams/architecture-current.svg` for the implemented architecture, `diagr
 | API and request controls | `app/main.py`, `control_api.py`, `changes_api.py` | Validated HTTP boundaries, existing access checks and thread offloading for longer operations. |
 | Contracts | `app/models.py` | Typed specifications, transformation enums and run requests. |
 | Ingestion | `app/ingest.py` | Bounded CSV/JSON/API snapshots, hashes and persisted parsed records. |
-| Mapping | `app/mapping.py`, `semantic_mapping.py` | Offline inference; optional model-assisted proposals; immutable approved decisions. |
+| Mapping | `app/mapping.py`, `semantic_mapping.py`, `schema_discovery.py`, `source_combination.py` | Offline inference; optional model-assisted proposals; immutable approved decisions. |
 | Generation/model adapter | `app/generation.py`, `ai.py`, `llm_router.py` | Recipe compilation, structured Responses requests, bounded retries and fail-closed validation. |
 | Extraction/translation | `app/extraction.py`, `translation.py` | Document staging and declarative SQL conversion. |
 | Deterministic execution | `app/cleaning.py`, `engine.py` | Pure transform/DQ replay plus transactional publication. |
@@ -93,7 +93,7 @@ Pipeline Studio separates **target-contract generation** from **source-to-target
 
 Every target must appear exactly once in a semantic proposal. Invented/reused paths and invalid reference citations are rejected. Low-confidence suggestions are left unselected. Approval explicitly decides every target field; required fields cannot remain unmapped. Saved approval is bound to exact source snapshot IDs/hashes and target identity.
 
-A run using an approved mapping consumes those exact decisions; it does not silently re-infer mappings. Semantic mapping does not generate joins, aggregation or arbitrary expressions.
+An approved run consumes the exact saved bindings. **Infer schema, keys & mappings** suggests equivalent fields, a target contract and key candidates across two to five sources. Local checks test candidate keys across complete snapshots. Review the **Data model** for field lineage, then stage a reviewed join or approve mapped append. See [Multi-source mapping](MULTI_SOURCE_MAPPING.md).
 
 ## 5. Conversational modification and human review
 
@@ -163,7 +163,7 @@ cd C:\GenAI_ETL_Pipeline
 .\start.ps1       # default: http://127.0.0.1:8765
 ```
 
-Use ` .\start.ps1 -Port 8767 ` to choose another free port. The latest implementation was browser-verified on 8767; an already-running older server needs restarting to load changed backend code. Run **one Uvicorn process**.
+Use ` .\start.ps1 -Port 8765 ` or another free port. The BodhAI instance was verified on 8765. Restart an existing server when its backend code changes. Run **one Uvicorn process**.
 
 If PowerShell blocks script execution, use the equivalent command without changing system policy:
 
@@ -180,7 +180,7 @@ If PowerShell blocks script execution, use the equivalent command without changi
 | `APP_API_TOKEN` | Shared bearer token. Without one, APIs accept loopback clients only. Required for container/non-loopback clients. |
 | `DATA_DIR` | Runtime database directory, default `data`. |
 | `API_ALLOWED_HOSTS` | Exact public HTTPS API host allowlist; default empty. |
-| `MAX_UPLOAD_BYTES` | Default 5,242,880 bytes. |
+| `MAX_UPLOAD_BYTES` | Default 31,457,280 bytes (30 MiB). |
 | `EMAIL_ENABLED` | Default `false`; enables the SMTP outbox worker. |
 | `EMAIL_NOTIFY_PUBLICATION` | Default `false`; optional run-publication messages. |
 | `SMTP_HOST`, `SMTP_PORT` | Approved SMTP host and port; STARTTLS default port 587. |
@@ -194,8 +194,8 @@ Live requests send the selected instructions, bounded source profiles and option
 
 ### Input limits and connector scope
 
-- Structured sources: CSV, JSON, JSONL/NDJSON; 1–25,000 records per source and at most 20 sources in a run.
-- Semantic mapping proposals: at most five sources and 100 flattened fields per source.
+- CSV/TSV/Parquet sources: up to 30 MiB and 25 million rows per file, ingested and processed in 25,000-row chunks. JSON/JSONL/NDJSON/TXT and API snapshots remain capped at 25,000 rows. Pipeline runs exceeding 25,000 total rows report progress and publish atomically after critical checks pass.
+- Semantic mapping proposals support up to five sources and 100 flattened fields per source. A join stage uses two sources. Disk-backed merge has no fixed total-row ceiling. The separate transformation preview accepts up to 25,000 input rows.
 - Extraction: TXT/MD, unencrypted text-layer PDFs up to 30 pages, or PNG/JPEG in live vision mode. Text limit 60,000 characters.
 - Knowledge: up to 100,000 characters per reference, default 1,000-character chunks/150 overlap, at most 5,000 chunks locally and ten results per retrieval.
 - API ingestion: one bounded, unauthenticated public HTTPS JSON snapshot on port 443; no redirects, private addresses, pagination, OAuth or CDC.
@@ -213,7 +213,7 @@ Data APIs require the configured bearer token, or permitted loopback access when
 | Configuration | `GET /health`, `GET /api/config`, `GET /api/schema` |
 | Sources | `GET /api/datasets`, `POST /api/datasets/upload`, `POST /api/datasets/api` |
 | Assistance | `POST /api/generate`, `/api/artifacts`, `/api/mapping`, `/api/extract`, `/api/translate`, `/api/diagnose` |
-| Semantic mappings | `POST /api/mappings/generate`, `GET /api/mappings/{id}`, `POST /api/mappings/{id}/approve` |
+| Schema discovery and semantic mappings | `POST /api/mappings/discover`, `POST /api/mappings/generate`, `GET /api/mappings/{id}`, `POST /api/mappings/{id}/approve` |
 | Execution | `GET/POST /api/runs`, `GET /api/runs/{id}`, `GET /api/runs/{id}/quarantine`, `GET /api/warehouse` |
 | Remediation | `POST /api/runs/{id}/remediation`, `POST /api/remediations/{id}/apply` |
 | References | `GET/POST /api/knowledge`, `POST /api/knowledge/search`, `/api/knowledge/answer`, `/api/knowledge/demo` |
@@ -270,7 +270,7 @@ A first cloud pilot can use managed containers; Kubernetes is not a prerequisite
 
 ## 12. Verification and supporting documentation
 
-The latest completed verification recorded **156 passing tests**, with one upstream TestClient/httpx deprecation warning. Tests use isolated data and mocked model/SMTP responses. Syntax/dependency and archive checks passed. This documentation refresh does not change runtime behavior.
+The latest completed verification recorded **197 passing tests**, with one upstream TestClient/httpx deprecation warning. Tests use isolated data and mocked model/SMTP responses. Syntax/dependency and archive checks passed. This documentation refresh does not change runtime behavior.
 
 The isolated workflow evidence shows:
 
@@ -283,7 +283,7 @@ The isolated workflow evidence shows:
 | Configuration rollback | Version 3 restores v1 definition; 5 warehouse rows remain |
 | Notifications | Activation and rollback events queued; no real email sent |
 
-Live AI previously returned HTTP 429; successful live mapping/edit inference remains unverified. SMTP delivery remains unverified without sender/recipient/provider configuration. Docker, cloud deployment and production load/security behavior are not certified by these tests.
+Live Groq mapping and discovery were verified with synthetic data, including SKU and Design Number/Style equivalence. Other model/provider combinations and live edit inference require separate verification. SMTP delivery remains unverified without sender/recipient/provider configuration. Docker, cloud deployment and production load/security behavior are not certified by these tests.
 
 Supporting documents:
 
@@ -298,4 +298,4 @@ Evidence files: `outputs/change-workflow-evidence.json`, `outputs/knowledge-eval
 
 ## Release 1.4 routing update
 
-The model gateway supports named primary/backup models, native OpenAI Responses and Claude Messages adapters, Gemini, Groq and DeepSeek via their documented compatible APIs and other configured compatible servers. Router mode reads config/llm_routes.yaml, bounded attempt/time budgets and explicit cross-provider permission. Successful metadata identifies the actual model and fallback history; /api/config exposes sanitized route readiness. There is no automatic offline fallback or safety/validation-error provider shopping. See MULTI_MODEL_ROUTING.md. The latest 156-test suite uses mocked APIs; additional provider/model combinations still require live compatibility checks.
+The model gateway supports named primary/backup models, native OpenAI Responses and Claude Messages adapters, Gemini, Groq and DeepSeek via their documented compatible APIs and other configured compatible servers. Router mode reads config/llm_routes.yaml, bounded attempt/time budgets and explicit cross-provider permission. Successful metadata identifies the actual model and fallback history; /api/config exposes sanitized route readiness. There is no automatic offline fallback or safety/validation-error provider shopping. See MULTI_MODEL_ROUTING.md. The automated suite uses mocked APIs; additional provider/model combinations still require live compatibility checks.

@@ -35,7 +35,7 @@ The initial LangGraph/vector/training scaffold was removed after this fit assess
 - Shared development token, cross-origin mutation checks, restricted API ingestion and server-side credentials.
 - Optional local keyword retrieval over reviewed references, exact evidence-reference validation and a small repeatable regression dataset.
 
-These are useful components, but do not provide multi-user authorization, tenant isolation, tamper-proof auditing, complete PII handling, a durable worker service or production operating evidence. Live OpenAI mapping was previously blocked by HTTP 429 and has not been successfully verified with the configured account.
+These are useful components, but do not provide multi-user authorization, tenant isolation, tamper-proof auditing, complete PII handling, a durable worker service or production operating evidence. Live Groq discovery and mapping were verified on synthetic data. Production inference accuracy, quotas and operating behavior require representative workload validation.
 
 ## Concrete production blockers
 

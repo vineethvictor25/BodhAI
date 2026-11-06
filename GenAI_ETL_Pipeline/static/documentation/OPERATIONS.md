@@ -9,7 +9,7 @@
 | DATA_DIR | data | Database directory; relative to process working directory |
 | APP_API_TOKEN | unset | Shared bearer token; required for non-loopback API clients and containers |
 | API_ALLOWED_HOSTS | empty | Exact public HTTPS hostname allowlist for source snapshots |
-| MAX_UPLOAD_BYTES | 5242880 | Source/document byte limit; HTTP envelope gets a 64KB allowance |
+| MAX_UPLOAD_BYTES | 31457280 | Source/document byte limit (30 MiB); HTTP envelope gets a 64KB allowance |
 
 Restart after changing configuration. The startup script always changes into the project directory. Run one application process. The HTML/JS/CSS shell and `/health` are public; data APIs and `/api/schema` use the access policy. Unauthenticated APIs accept loopback clients only. When a bearer token is set, all API requests need it, including local ones. Cross-origin mutation requests are rejected. This is a development authentication model; put OIDC and authorization in front of an enterprise deployment.
 
@@ -39,7 +39,7 @@ To restore, stop the server, preserve the current database directory, and restor
 
 **Interrupted run:** the server restarted before finalization. Review the persisted recipe and source snapshots and submit with a new key. The original key returns the interrupted run for traceability.
 
-**Live AI failure:** check the selected model, account access and key privately. Errors disclose HTTP status, not the provider body or key. 429, transport errors and 5xx receive at most three attempts. Other errors fail immediately. Never paste credentials in an error-log diagnosis field.
+**Live AI failure:** check the selected model, account access and key privately. Errors disclose HTTP status, not the provider body or key. Availability errors follow the configured route and call budgets. Mapping can request one same-route correction for malformed output or omitted append sources. Temporary throttling can leave a blocked partial draft visible. Use **Preview mappings** for offline name and alias matching. Never paste credentials in an error-log diagnosis field.
 
 **Image/scanned PDF:** local mode cannot perform OCR. Enable a vision-capable provider for PNG/JPEG; export scanned PDF pages to images first. Encrypted PDFs and PDFs above 30 pages are rejected.
 

@@ -7,7 +7,7 @@ This increment is deliberately small: reviewed policy/runbook retrieval, not a n
 1. Open **Knowledge & checks** after restarting the server and refreshing the page.
 2. Register a title and reference text. Explicitly select the review checkbox to allow retrieval. Unreviewed drafts remain excluded. The shared local token is not a production reviewer identity.
 3. Use **Retrieve cited excerpts** to inspect the exact source chunk and character offsets.
-4. In Pipeline Studio, optionally select **Include reviewed reference excerpts** when generating a semantic mapping. The model receives up to four matching reference chunks in addition to the existing bounded source profiles.
+4. In Pipeline Studio, optionally select **Include reviewed reference excerpts** when generating a semantic mapping or inferring a multi-source schema. The model receives up to four matching reference chunks in addition to the existing bounded source profiles.
 5. Review the mapping as before. Retrieved rules cannot invent source paths, override approval, change the validated execution vocabulary or bypass quality checks. Returned knowledge citation IDs must belong to the retrieved set.
 
 Optional retrieval is **off by default**. It is appropriate when organization-specific rules matter; it is unnecessary for obvious source-to-target name matches. We have not demonstrated a live mapping accuracy improvement over the existing sample-aware mapper. No additional live calls were made in this increment given the earlier account HTTP 429 response.

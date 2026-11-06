@@ -214,3 +214,63 @@ def test_generic_key_fallback_preserves_vendor_key_priority(monkeypatch):
     assert router.load_config().routes[0].api_key_env=='LLM_API_KEY'
     monkeypatch.setenv('GROQ_API_KEY','test-vendor-key')
     assert router.load_config().routes[0].api_key_env=='GROQ_API_KEY'
+
+
+@pytest.mark.parametrize('failure', [
+    httpx.Response(400, json={'error': {'code': 'json_validate_failed', 'failed_generation': 'private output'}}),
+    httpx.Response(200, json={'status': 'completed', 'output': [
+        {'content': [{'type': 'output_text', 'text': '{"wrong": true}'}]}
+    ]}),
+])
+def test_mapping_output_is_retried_on_same_route(routing, monkeypatch, failure):
+    routing(max_attempts_per_route=2)
+    calls = mock_client(monkeypatch, [failure, success()])
+    result, metadata = router.structured('task', 'input', Result, repair_invalid_output=True)
+    assert result.answer == 'ok'
+    assert [call['json']['model'] for call in calls] == ['main-model', 'main-model']
+    assert 'private output' not in json.dumps(calls)
+    assert [attempt['outcome'] for attempt in metadata['attempts']] == ['invalid_output', 'success']
+
+
+@pytest.mark.parametrize('budget', [1, 3])
+def test_mapping_repair_respects_budget_and_never_falls_back_on_invalid_output(routing, monkeypatch, budget):
+    routing(max_attempts_per_route=3, max_calls=budget)
+    failure = httpx.Response(400, json={'error': {'code': 'json_validate_failed'}})
+    calls = mock_client(monkeypatch, [failure, failure, success()])
+    with pytest.raises(router.ModelError) as caught:
+        router.structured('task', 'input', Result, repair_invalid_output=True)
+    assert caught.value.category == 'invalid_output'
+    assert [call['json']['model'] for call in calls] == ['main-model'] * min(2, budget)
+
+
+def test_result_correction_reuses_same_route_and_budget(routing, monkeypatch):
+    routing(max_attempts_per_route=2)
+    calls = mock_client(monkeypatch, [success(), success()])
+    result, metadata = router.structured(
+        'task', 'input', Result, result_correction=lambda result: 'Include every source.',
+    )
+    assert result.answer == 'ok'
+    assert [attempt['outcome'] for attempt in metadata['attempts']] == ['incomplete_mapping', 'success']
+    assert [call['json']['model'] for call in calls] == ['main-model', 'main-model']
+    assert 'Include every source.' in calls[1]['json']['instructions']
+
+
+def test_rate_limited_correction_keeps_original_result_for_review(routing, monkeypatch):
+    routing(max_attempts_per_route=3)
+    calls = mock_client(monkeypatch, [success(), httpx.Response(429)])
+    result, metadata = router.structured(
+        'task', 'input', Result, result_correction=lambda result: 'Include every source.',
+    )
+    assert result.answer == 'ok'
+    assert [attempt['outcome'] for attempt in metadata['attempts']] == ['incomplete_mapping', 'rate_limit']
+    assert [call['json']['model'] for call in calls] == ['main-model', 'main-model']
+
+
+def test_rate_limited_mapping_retry_suggests_provider_wait_without_another_call(routing, monkeypatch):
+    routing(max_attempts_per_route=3)
+    invalid = httpx.Response(400, json={'error': {'code': 'json_validate_failed'}})
+    calls = mock_client(monkeypatch, [invalid, httpx.Response(429, headers={'Retry-After': '45'}), success()])
+    with pytest.raises(router.ModelError, match='Wait 45 seconds') as caught:
+        router.structured('task', 'input', Result, repair_invalid_output=True)
+    assert caught.value.category == 'rate_limit'
+    assert [call['json']['model'] for call in calls] == ['main-model', 'main-model']

@@ -1,21 +1,32 @@
 # Architecture — FlowForge 1.5.0
 
-Updated 3 November 2026. Start with [SYSTEM_GUIDE.md](SYSTEM_GUIDE.md) for the consolidated implementation and operating guide.
+Updated 6 November 2026. Start with [SYSTEM_GUIDE.md](SYSTEM_GUIDE.md) for the consolidated implementation and operating guide.
 
 ## Implemented architecture
 
 ![Implemented local architecture](diagrams/architecture-current.svg)
 
-One FastAPI process hosts the review API, deterministic ETL functions and optional SMTP worker. SQLite stores raw/protected source snapshots, Gold rollups, SCD2 history, source profiles/contracts and, quality results, warehouse rows, immutable pipeline versions, proposals, audit events, reviewed reference chunks and the notification outbox. Optional model calls produce proposals, not executable authority.
+One FastAPI process hosts the review API, deterministic ETL functions and optional SMTP worker. SQLite stores raw/protected source snapshots, Gold rollups, SCD2 history, source profiles/contracts, quality results, warehouse rows, immutable pipeline versions, proposals, audit events, reviewed reference chunks and the notification outbox. Optional model calls produce proposals, not executable authority.
 
 ```mermaid
 flowchart TB
   UI[Browser console / CLI] --> API[FastAPI / validated data API boundary]
   subgraph APP[Implemented: one local application process]
-    API --> ING[Ingest files / HTTPS API / staged documents]
-    API --> AI[Recipe / mapping / extraction assistance]
+    API --> ING[Ingest structured files and HTTPS snapshots]
+    ING --> ST[Chunked CSV / TSV / Parquet staging]
+    API --> AI[Recipe and multi-source schema discovery]
+    AI --> MV[Field equivalences and mapping validation]
+    ST --> M[Disk-backed merge and join preview]
+    ING --> M
+    MV --> K[Full-snapshot key checks and join preview]
+    M --> K
+    K --> MR[Interactive data model and human mapping review]
+    MR -->|reviewed join| M
+    MR -->|approved bindings| EXEC
     API --> CH[Conversation / diff / human review / versions]
-    API --> EXEC[Deterministic transform and DQ engine]
+    API --> EXEC[Deterministic ETL and data quality]
+    ST --> EXEC
+    M --> EXEC
     REF[Reviewed references / SQLite FTS5] -. optional context .-> AI
     GUARD[Typed operations / source and policy checks] --> CH
     CH --> PRE[Pure preview: zero publication]
@@ -23,10 +34,11 @@ flowchart TB
     HUMAN --> ACTIVE[Activate immutable version]
     ACTIVE --> AUTH[Separate execution authorization]
     AUTH --> EXEC
-    EXEC --> GATE{DQ and target contract pass?}
+    EXEC --> STREAM[Bounded row batches for large runs]
+    STREAM --> GATE{DQ and target contract pass?}
     GATE -->|yes| GOLD[Atomic warehouse upsert]
     GATE -->|no| HOLD[No new-batch publication]
-    EXEC --> SILVER[Silver and quarantine]
+    STREAM --> SILVER[Silver and quarantine]
     DB[(SQLite WAL: sources / control / audit / knowledge)]
     ING --> DB
     CH --> DB
@@ -44,7 +56,15 @@ flowchart TB
   RB -.-> NOTE
 ```
 
-## Proposed cloud-native target — not deployed
+## Multi-source mapping and join review
+
+![AI mapping, key checks and review](diagrams/architecture-mapping.svg)
+
+The model suggests equivalent columns independently of the integration strategy. Discovery checks the proposed target key across the applicable snapshots. A reviewed join stages a combined source with lineage, then a person reviews the final mappings. Merge and join preview use a disk-backed index. The interactive Data model traces target columns to their mapped sources.
+
+See [Multi-source mapping](MULTI_SOURCE_MAPPING.md) and the [editable Mermaid workflow](diagrams/architecture-mapping.mmd).
+
+## Proposed cloud-native target
 
 ![Proposed cloud target](diagrams/architecture-cloud-target.svg)
 
@@ -59,6 +79,8 @@ flowchart TB
     W --> PG
     W --> OBJ[(Encrypted versioned object storage)]
     W --> WH[(Chosen cloud warehouse)]
+    W --> E[Durable key checks, join previews and lineage evidence]
+    E --> PG
     W --> EXT[Approved LLM / SMTP endpoints]
     SEC[Managed secrets / workload identity] --> W
     API --> OBS[Metrics / traces / alerts]

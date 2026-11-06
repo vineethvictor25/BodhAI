@@ -8,7 +8,7 @@ def isolated_database(tmp_path, monkeypatch):
     monkeypatch.setenv("PROVIDER", "local")
     monkeypatch.setenv("EMAIL_ENABLED","false")
     monkeypatch.setenv("EMAIL_NOTIFY_PUBLICATION","false")
-    for key in ('LLM_PRIMARY_ROUTE','LLM_FALLBACK_ROUTES','LLM_ALLOW_CROSS_PROVIDER_FALLBACK'):
+    for key in ('LLM_PRIMARY_ROUTE','LLM_FALLBACK_ROUTES','LLM_ALLOW_CROSS_PROVIDER_FALLBACK','LLM_MODEL','LLM_API_KEY','LLM_BASE_URL','LLM_STRUCTURED_MODE','LLM_VISION','LLM_REQUIRE_API_KEY','LLM_ALLOW_HTTP_LOOPBACK'):
         monkeypatch.delenv(key,raising=False)
     monkeypatch.delenv("APP_API_TOKEN", raising=False)
     monkeypatch.delenv("API_ALLOWED_HOSTS", raising=False)

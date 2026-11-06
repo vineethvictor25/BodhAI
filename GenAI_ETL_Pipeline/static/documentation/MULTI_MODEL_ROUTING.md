@@ -15,6 +15,20 @@
 
 This changes model access, not execution authority. All outputs still pass the application's Pydantic, source/policy, preview and human-review controls. Fallback cannot approve or publish a change.
 
+## Choose any supported model in the active .env
+
+The active configuration file is `C:\GenAI_ETL_Pipeline\.env`, not `.env.example`. Its multi-provider entries preserve existing credentials. `PROVIDER` identifies the API adapter; `LLM_MODEL` is the exact model ID and overrides the corresponding vendor-specific model setting in single-provider mode. Router mode uses each named route's model setting instead.
+
+```dotenv
+PROVIDER=groq
+LLM_MODEL=your-account-model-id
+GROQ_API_KEY=your-private-key
+```
+
+Gemini, DeepSeek and Claude use `PROVIDER=gemini`, `deepseek` and `anthropic` respectively with their vendor key. A populated vendor-specific API key takes precedence; `LLM_API_KEY` is the fallback when that key is absent. No model list is hardcoded: the selected model must be available to your account and support the required structured output.
+
+Other OpenAI-compatible services can use `PROVIDER=openai_compatible`, `LLM_BASE_URL` (API root), `LLM_MODEL` and `LLM_API_KEY`. Set `LLM_STRUCTURED_MODE=json_object` if the service lacks JSON-schema mode; output remains validated locally. Optional `LLM_VISION` declares image capability. Local compatible servers additionally require `LLM_ALLOW_HTTP_LOOPBACK=true`; set `LLM_REQUIRE_API_KEY=false` only when that local service intentionally has no key. Arbitrary proprietary API formats still need an adapter. Restart after editing `.env`.
+
 ## Start with two OpenAI models
 
 Keep your existing key and model settings. Add these privately to `.env`:
@@ -119,7 +133,8 @@ Compatible routes default to `structured_mode: json_schema`. If a particular ser
 | Recognized model-unavailable 404 | Move to the next selected route. A generic endpoint 404 is treated as configuration error. |
 | Missing model/key or unsupported image capability | Skip that route with a sanitized reason. |
 | HTTP 400/401/403 or other request/configuration failures | Stop and report; do not hide invalid configuration or authentication. |
-| Refusal, content filtering, truncated/incomplete response, invalid JSON/schema | Stop; no fallback to obtain a different safety or validation outcome. |
+| Refusal, content filtering or truncated response | Stop on the current route. |
+| Invalid JSON/schema or omitted append source in discovery | Mapping can request one same-route correction within call/time budgets. If rate-limited, a partial discovery result stays available for review when present; approval remains blocked. |
 | All routes fail or call/time budget is reached | Return an error. Do not fabricate a result or silently switch to the offline compiler. |
 
 The attempt ceiling applies across routes, so it can be exhausted before the last route. Timeout budgets are checked between attempts and bound HTTP phase timeouts; they are not a hard wall-clock cancellation/SLO guarantee. The router has no background job queue, persistent circuit breaker or cross-request health cache. Each new call starts at its configured primary.
@@ -136,7 +151,7 @@ Successful responses include actual provider/model/route, whether fallback was u
 
 The v1.4 suite covers multiple model order, primary retries, call budgets, rate/quota/timeout/server/model-unavailable failover, cross-provider and cross-endpoint permission, refusal/validation stop behavior, manual route override, image filtering, unconfigured-route skipping, protocol payloads and configuration redaction.
 
-These are mocked protocol/behavior tests. No successful live Claude, Gemini, Groq, DeepSeek or compatible-server inference is claimed, and the prior live OpenAI request returned HTTP 429. Verify each selected route with non-sensitive representative inputs and the actual model/account before production. Provider terms, retention, region, schema support, cost and quotas may differ. Existing production identity, queue, scaling and operations gaps remain.
+Automated protocol tests use mocked provider responses. Live Groq discovery and mapping were verified with synthetic datasets in JSON-schema mode. The earlier OpenAI verification returned HTTP 429. Verify each selected route with non-sensitive representative inputs and the actual model/account before production. Provider terms, retention, region, schema support, cost and quotas may differ. Existing production identity, queue, scaling and operations gaps remain.
 
 Official protocol references consulted:
 

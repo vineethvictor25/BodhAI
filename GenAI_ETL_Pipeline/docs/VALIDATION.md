@@ -69,3 +69,9 @@ A real headless Chrome run verified the four-file sample: 8 input, 5 accepted, 1
 ## Current workspace check — 4 November 2026
 
 The full local suite passes 171 tests (one upstream Starlette/httpx deprecation warning). The warehouse validation UI and endpoint were checked against the local published targets; `sales_transactions_2022_2025` returned 18,000 rows checked and zero invalid records. Python dependencies pass `pip check`, and syntax checks pass for all six browser JavaScript files. These are local checks; hosted CI and Docker builds have not been run.
+
+## Multi-source discovery and data model verification
+
+The latest suite passed 197 tests. It includes full-snapshot key checks beyond the model sample, duplicate keys across appended sources, blocked partial append, lookup participation through a join key alone, rate-limited corrections and rejection of nonexistent equivalent field paths. A disk-backed left join retained all 25,007 rows and the append fixture retained all 25,008 rows. These fixtures exercise the removal of the earlier merge ceiling.
+
+Live Groq checks on synthetic sources verified SKU and Design Number/Style field equivalence and a reviewed many-to-one left join. Browser checks exercised the data model with standard preview and editable AI mappings, including primary key, join paths, cardinality and lineage updates. These checks establish the exercised local workflows and model configuration. Production accuracy and throughput need representative data and workloads.

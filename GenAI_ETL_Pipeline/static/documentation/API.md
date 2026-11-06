@@ -58,9 +58,18 @@ with httpx.Client(base_url="http://127.0.0.1:8765", timeout=120) as client:
 
 The JSON schema and enums in `app/models.py` are the authoritative recipe contract. Downloaded YAML is a recipe consumed by the CLI, not an Airflow deployment manifest. SQL artifacts are reference DDL; the SQLite runtime stores records as governed JSON rows.
 
-## Semantic mapping (v1.1)
+## Schema discovery and semantic mapping
 
-`POST /api/mappings/generate` takes instructions, spec and dataset_ids. `GET /api/mappings/{id}` retrieves the persisted proposal. `POST /api/mappings/{id}/approve` records complete per-dataset decisions with approved=true. Pass the returned ID as `approved_mapping_id` in a run request. See `NATURAL_LANGUAGE_MAPPING.md` for full payloads and approval scope.
+| Endpoint | Request and result |
+|---|---|
+| `POST /api/mappings/discover` | Requires `instructions` and two to five distinct `dataset_ids`. Accepts `combination_mode` (auto, append, join), `destination`, and `use_knowledge`. Returns `discovery.field_equivalences`, candidate keys, key evidence, combination and per-source mappings. A blocked draft has null `id` and `spec`. |
+| `POST /api/mappings/generate` | Takes `instructions`, `spec`, `dataset_ids`, and optional `combination_mode` and `use_knowledge`. Returns a proposal for the existing contract. |
+| `POST /api/datasets/merge/preview` | Evaluates explicit mode, source IDs and key paths. Returns row impact, schema and join cardinality without staging a source. |
+| `POST /api/datasets/merge` | Stages a reviewed combined source with parent lineage and row impact. |
+| `GET /api/mappings/{id}` | Retrieves a persisted proposal and its approval status. |
+| `POST /api/mappings/{id}/approve` | Records complete per-dataset decisions with `approved: true`. The run request accepts the ID as `approved_mapping_id`. |
+
+Temporary rate limiting during a mapping correction with no usable response returns HTTP 429. A rate-limited correction with usable partial discovery data can return a blocked draft. See [Natural-language mapping](NATURAL_LANGUAGE_MAPPING.md) and [Multi-source mapping](MULTI_SOURCE_MAPPING.md).
 
 ## v1.2 reference lookup
 

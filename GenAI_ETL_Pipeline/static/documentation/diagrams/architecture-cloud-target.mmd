@@ -8,6 +8,8 @@ flowchart TB
     W --> PG
     W --> OBJ[(Encrypted versioned object storage)]
     W --> WH[(Chosen cloud warehouse)]
+    W --> E[Durable key checks, join previews and lineage evidence]
+    E --> PG
     W --> EXT[Approved LLM / SMTP endpoints]
     SEC[Managed secrets / workload identity] --> W
     API --> OBS[Metrics / traces / alerts]

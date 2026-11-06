@@ -25,7 +25,7 @@ Release 1.5 uses the requested 49-point lifecycle as its design baseline. **Loca
 | 19 | Deduplication | Local exact-key reject or latest-order selection with exclusions. Fuzzy/probabilistic identity resolution is deferred. |
 | 20 | Validity/outliers | Local ranges, allowed sets, format checks and reference-key checks. Domain-specific statistical detectors need datasets/evaluation. |
 | 21 | Projection/filters | Local target projection and typed row filtering. Source SQL pushdown/column pruning require extraction adapters. |
-| 22 | Column mapping | Local names/aliases/overrides/approved semantic mappings; casts/defaults/derived concat. Split/system column operators need extension; ingestion system metadata is in the envelope. |
+| 22 | Column mapping | Local names/aliases/overrides and approved semantic mappings. Joint AI discovery proposes equivalent fields, a target schema and candidate keys. Local checks validate keys and join impact. Casts/defaults/derived concat are available. Split/system column operators need extension; ingestion system metadata is in the envelope. |
 | 23 | Calculations | Local ordered arithmetic, concat/coalesce and year/month. Age/tenure/calendar/financial fixed-point engines require explicit extensions. |
 | 24 | Enrichment | Local append, inner and left joins, strict typed keys, right-key uniqueness and Unknown defaults. Many-to-many fan-out is blocked. |
 | 25 | Rollups | Local configured Gold count/sum/avg/min/max over full published detail. |

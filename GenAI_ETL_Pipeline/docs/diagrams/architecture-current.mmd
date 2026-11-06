@@ -1,10 +1,21 @@
 flowchart TB
   UI[Browser console / CLI] --> API[FastAPI / validated data API boundary]
   subgraph APP[Implemented: one local application process]
-    API --> ING[Ingest files / HTTPS API / staged documents]
-    API --> AI[Recipe / mapping / extraction assistance]
+    API --> ING[Ingest structured files and HTTPS snapshots]
+    ING --> ST[Chunked CSV / TSV / Parquet staging]
+    API --> AI[Recipe and multi-source schema discovery]
+    AI --> MV[Field equivalences and mapping validation]
+    ST --> M[Disk-backed merge and join preview]
+    ING --> M
+    MV --> K[Full-snapshot key checks and join preview]
+    M --> K
+    K --> MR[Interactive data model and human mapping review]
+    MR -->|reviewed join| M
+    MR -->|approved bindings| EXEC
     API --> CH[Conversation / diff / human review / versions]
-    API --> EXEC[Deterministic transform and DQ engine]
+    API --> EXEC[Deterministic ETL and data quality]
+    ST --> EXEC
+    M --> EXEC
     REF[Reviewed references / SQLite FTS5] -. optional context .-> AI
     GUARD[Typed operations / source and policy checks] --> CH
     CH --> PRE[Pure preview: zero publication]
@@ -12,10 +23,11 @@ flowchart TB
     HUMAN --> ACTIVE[Activate immutable version]
     ACTIVE --> AUTH[Separate execution authorization]
     AUTH --> EXEC
-    EXEC --> GATE{DQ and target contract pass?}
+    EXEC --> STREAM[Bounded row batches for large runs]
+    STREAM --> GATE{DQ and target contract pass?}
     GATE -->|yes| GOLD[Atomic warehouse upsert]
     GATE -->|no| HOLD[No new-batch publication]
-    EXEC --> SILVER[Silver and quarantine]
+    STREAM --> SILVER[Silver and quarantine]
     DB[(SQLite WAL: sources / control / audit / knowledge)]
     ING --> DB
     CH --> DB

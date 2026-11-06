@@ -5,7 +5,7 @@ import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import Field
@@ -19,6 +19,7 @@ from .mapping import infer_mapping
 from .models import PipelineSpec, PlanRequest, RunRequest, StrictModel, TranslateRequest, demo_spec
 from .remediation import LogRequest, apply, diagnose, propose
 from .translation import translate
+from .schema_discovery import DiscoveryRequest, discover
 from .semantic_mapping import MappingRequest, MappingApproval, propose_mapping, approve_mapping, get_proposal
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -57,7 +58,7 @@ async def request_bounds(request: Request, call_next):
             size = int(length or 0)
         except ValueError:
             return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
-        if size < 0 or size > int(os.getenv("MAX_UPLOAD_BYTES", "5242880")) + 65536:
+        if size < 0 or size > int(os.getenv("MAX_UPLOAD_BYTES", "31457280")) + 65536:
             return JSONResponse(status_code=413, content={"detail": "Request exceeds configured limit"})
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -87,8 +88,12 @@ def authorize(request: Request):
 async def bad_input(request, error):
     content={"detail": str(error)[:2000]}
     from .llm_router import ModelError
-    if isinstance(error,ModelError): content['llm_error']={'category':error.category,'attempts':error.attempts}
-    return JSONResponse(status_code=409 if isinstance(error, ConflictError) else 400, content=content)
+    status = 409 if isinstance(error, ConflictError) else 400
+    if isinstance(error, ModelError):
+        content['llm_error'] = {'category': error.category, 'attempts': error.attempts}
+        if error.category == 'rate_limit':
+            status = 429
+    return JSONResponse(status_code=status, content=content)
 
 
 @app.get("/health")
@@ -101,7 +106,7 @@ def health():
 @app.get("/api/config", dependencies=[Depends(authorize)])
 def config():
     routing=public_config()
-    return {"provider": provider(), "llm_routing":routing, "live_ai_configured": routing["configured"], "default_spec": demo_spec().model_dump(), "max_upload_bytes": int(os.getenv("MAX_UPLOAD_BYTES", "5242880")), "max_rows_per_source": MAX_ROWS}
+    return {"provider": provider(), "llm_routing":routing, "live_ai_configured": routing["configured"], "default_spec": demo_spec().model_dump(), "max_upload_bytes": int(os.getenv("MAX_UPLOAD_BYTES", "31457280")), "max_rows_per_source": MAX_ROWS}
 
 
 @app.get("/api/schema", dependencies=[Depends(authorize)])
@@ -113,11 +118,11 @@ def schema():
 def datasets():
     with store.db() as conn:
         rows = conn.execute("SELECT id,name,sha256,created_at,rows_json,metadata_json FROM datasets ORDER BY created_at DESC LIMIT 100").fetchall()
-    return [{"id": r["id"], "name": r["name"], "sha256": r["sha256"], "created_at": r["created_at"], "row_count": len(json.loads(r["rows_json"])), "metadata": json.loads(r["metadata_json"])} for r in rows]
+    return [{"id": r["id"], "name": r["name"], "sha256": r["sha256"], "created_at": r["created_at"], "row_count": json.loads(r["metadata_json"]).get("row_count",len(json.loads(r["rows_json"]))), "metadata": json.loads(r["metadata_json"])} for r in rows]
 
 
 async def read_upload(file):
-    maximum = int(os.getenv("MAX_UPLOAD_BYTES", "5242880"))
+    maximum = int(os.getenv("MAX_UPLOAD_BYTES", "31457280"))
     raw = await file.read(maximum + 1)
     if len(raw) > maximum:
         raise HTTPException(413, "Upload exceeds configured limit")
@@ -125,11 +130,11 @@ async def read_upload(file):
 
 
 @app.post("/api/datasets/upload", dependencies=[Depends(authorize)])
-async def upload(file: UploadFile = File(...),delimiter:str|None=Form(default=None)):
+async def upload(file: UploadFile = File(...),delimiter:str|None=Form(default=None),upload_id:str|None=Header(default=None,alias='X-Upload-ID')):
     raw = await read_upload(file)
     # Parsing is bounded; no filenames from uploads are ever used as filesystem paths.
     from starlette.concurrency import run_in_threadpool
-    return await run_in_threadpool(ingest_bytes, raw, Path(file.filename or "upload.csv").name,delimiter)
+    return await run_in_threadpool(ingest_bytes, raw, Path(file.filename or "upload.csv").name,delimiter,upload_id)
 
 
 class ApiSource(StrictModel):
@@ -166,13 +171,22 @@ class ProfileRequest(StrictModel):
 
 @app.post("/api/mapping", dependencies=[Depends(authorize)])
 def mapping(body: ProfileRequest):
-    data = store.get_dataset(body.dataset_id)
-    return {"mapping": infer_mapping(data["rows"], body.spec), "sample": data["rows"][:10]}
+    data = store.get_dataset_info(body.dataset_id)
+    if data["row_count"] > 25_000:
+        rows=store.get_dataset_sample(body.dataset_id)
+    else:
+        rows=store.get_dataset(body.dataset_id)["rows"]
+    return {"mapping": infer_mapping(rows, body.spec), "sample": rows[:10]}
 
 
 @app.post("/api/runs", dependencies=[Depends(authorize)])
 def run(body: RunRequest):
-    return execute(body)
+    return execute(body,background=True)
+
+
+@app.post("/api/mappings/discover", dependencies=[Depends(authorize)])
+def discover_schema(body: DiscoveryRequest):
+    return discover(body)
 
 
 @app.post("/api/mappings/generate", dependencies=[Depends(authorize)])
@@ -194,7 +208,7 @@ def mapping_approval(proposal_id: str, body: MappingApproval):
 def runs():
     with store.db() as conn:
         rows = conn.execute("SELECT id,status,created_at,finished_at,report_json FROM runs ORDER BY created_at DESC LIMIT 100").fetchall()
-    return [{**{k: r[k] for k in ("id", "status", "created_at", "finished_at")}, "report": {k: v for k, v in json.loads(r["report_json"]).items() if k in ("total", "accepted", "rejected", "published", "quality_score")}} for r in rows]
+    return [{**{k: r[k] for k in ("id", "status", "created_at", "finished_at")}, "report": {k: v for k, v in json.loads(r["report_json"]).items() if k in ("total", "accepted", "rejected", "published", "quality_score","progress")}} for r in rows]
 
 
 @app.get("/api/runs/{run_id}", dependencies=[Depends(authorize)])

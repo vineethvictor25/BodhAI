@@ -10,15 +10,15 @@ This is an executable, bounded local reference implementation. It does not deplo
 4. Select **Local workspace / SQLite**, apply the configuration, and run the reviewed pipeline.
 5. In Medallion ETL, inspect Silver, Gold, STTM and excluded rows. Download successful Silver/Gold as JSON, CSV or Parquet.
 
-The fixture has 8 input rows: 5 accepted lines, 1 invalid quantity quarantined, 1 cancelled line filtered, and 1 older duplicate superseded. Gold revenue is 710 USD. Running the fixture again upserts the same five business keys; it does not double the revenue.
+The fixture has 8 input rows: 5 accepted lines, 1 invalid quantity quarantined, 1 cancelled line filtered, and 1 older duplicate superseded. Gold revenue is 710 USD. Running the fixture again skips the five existing business keys; it does not overwrite their records or double the revenue.
 
 The Overview page's **Published warehouse** panel lets you select a target, inspect its current rows, and run a read-only validation over the full target. It checks stored JSON records, contract columns and types, unexpected columns, and primary-key consistency without returning record values in the validation report.
 
 ## Source formats and multi-file ingestion
 
-The source picker accepts multiple files, up to 20 per UI action. Each is uploaded independently, with per-file results: an invalid file does not erase successful uploads. Limits are 5MB encoded and 25,000 nonempty object records per source. The application is synchronous and memory-bounded; this is not a distributed reader.
+The source picker accepts multiple files, up to 20 per UI action. Each is uploaded independently, with per-file results: an invalid file does not erase successful uploads. CSV, TSV and Parquet/PQ files are scanned and stored in 25,000-row chunks, with a 30 MiB encoded-file and 25-million-row per-file limit. Large pipeline runs transform bounded chunks and publish only after critical quality checks pass; the run panel polls durable progress. JSON, JSONL/NDJSON, TXT and API snapshots retain the 25,000-row limit. This is a local SQLite implementation, not a distributed reader. Medallion transformation preview remains bounded to 25,000 total rows. Merge and merge preview read chunks and use a disk-backed join index without a fixed row ceiling; SCD2/latest-wins and Gold materialization beyond 100,000 detail rows are not supported for streamed runs.
 
-After a successful upload, Pipeline Studio can build an editable draft from the source columns. Complete unique identifiers are preferred as keys, and PII-protected fields are excluded from key selection. If no unique key is found, an identifier-like field is selected provisionally with a warning; review the key and inferred types before running.
+After a successful upload, Pipeline Studio automatically populates an editable draft specification from the first uploaded source's flattened columns when the current specification has not been manually edited or explicitly chosen. Source names become target aliases; scalar numeric values are conservatively inferred as integer/number, and other values remain strings. A complete unique identifier is preferred as the required primary key; protected fields are excluded from key selection. If no unique key is detected, an identifier-like field is provisional and a warning is shown. This is schema-based drafting, not semantic business-rule inference: review the key, types, requiredness, quality rules and privacy policy before execution. If multiple files were uploaded, the draft is based on the first successful upload; review mappings for the other selected sources. User-edited/generated specifications are not silently overwritten.
 
 | Format | Extraction behavior |
 |---|---|
@@ -33,7 +33,9 @@ Text encoding is UTF-8. Parquet metadata limits are safeguards, not a hardened p
 
 ## Append, joins and source lineage
 
-Selecting several sources in Pipeline studio maps each source independently, then appends normalized rows to one batch. This supports different headers and nested paths through aliases, overrides or reviewed semantic mappings. Business-key deduplication applies across the batch.
+For mapped append, Pipeline Studio maps each source independently and then appends normalized rows to one batch. For a suggested join, review the source roles, keys and full-data row impact, stage a combined source and review its final mappings. See [Multi-source mapping](MULTI_SOURCE_MAPPING.md). This supports different headers and nested paths through aliases, overrides or reviewed semantic mappings. Business-key deduplication applies across the batch.
+
+For the **Upsert** load strategy, **Existing primary key** defaults to **Skip existing row**. A key already in the target is left unchanged, and the run report records it in `skipped_existing`; `accepted` counts rows that passed input checks, while `published` counts rows written by this run. Choose **Update existing row** to retain Type 1 upsert behavior. This policy applies to target-key conflicts; duplicate keys inside one input batch are still handled by the pipeline's deduplication rule. Append continues to reject key collisions.
 
 The **Create merged source** action also supports:
 

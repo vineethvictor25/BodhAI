@@ -35,12 +35,13 @@ def test_pii_bronze_only_sensitive_column_encrypted_no_raw_copy(keys):
     d=ingest_bytes(raw,'contacts.csv');saved=store.get_dataset(d['id'])
     assert saved['rows'][0]['id']=='1' and saved['rows'][0]['amount']=='25'
     assert saved['rows'][0]['email'].startswith(privacy.PREFIX)
-    assert d['metadata']['bronze']['representation']=='protected_columns_json'
+    assert d['metadata']['bronze']['representation']=='protected_columns_json_chunks'
     with store.db() as conn:
         original=conn.execute('SELECT content FROM bronze_objects WHERE dataset_id=?',(d['id'],)).fetchone()[0]
         extract=conn.execute('SELECT content FROM extraction_batches').fetchone()[0]
+        stored=json.loads(conn.execute('SELECT record_json FROM dataset_rows WHERE dataset_id=?',(d['id'],)).fetchone()[0])
         assert b'person@example.test' not in original and b'person@example.test' not in extract
-        assert b'"amount": "25"' in original
+        assert stored['email'].startswith(privacy.PREFIX) and stored['amount']=='25'
 
 
 def test_sensitive_source_paths_keeps_plaintext_pii_fields_policy_protected():

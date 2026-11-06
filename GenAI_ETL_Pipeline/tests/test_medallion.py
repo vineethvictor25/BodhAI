@@ -110,6 +110,43 @@ def test_multi_source_sample_pipeline_and_replay(client):
     assert len(client.get(f"/api/runs/{r['id']}/sttm").json()['source_mappings'])==4
 
 
+def test_streamed_api_run_reports_progress_and_rejects_cross_chunk_duplicates(client,monkeypatch):
+    import time
+    import app.engine as engine
+    original_iterator=store.iter_dataset_rows
+    monkeypatch.setattr(engine,'MAX_IN_MEMORY_ROWS',1)
+    monkeypatch.setattr(store,'iter_dataset_rows',lambda dataset_id,batch_size=25000:original_iterator(dataset_id,batch_size=1))
+    data=ingest_bytes(b'id,amount,category,updated_at\n1,10,a,2026-11-01T12:00:00Z\n1,20,b,2026-11-02T12:00:00Z\n','duplicate.csv')
+    body={'spec':spec(max_reject_ratio=0.5).model_dump(),'dataset_ids':[data['id']],'idempotency_key':'streamed-duplicate'}
+
+    response=client.post('/api/runs',json=body)
+    assert response.status_code==200,response.text
+    run=response.json()
+    deadline=time.monotonic()+10
+    while run['status']=='running' and time.monotonic()<deadline:
+        time.sleep(0.01)
+        run=client.get(f"/api/runs/{run['id']}").json()
+
+    assert run['status']=='succeeded'
+    assert run['report']['progress']=={'phase':'complete','processed_rows':2,'total_rows':2,'percent':100}
+    assert (run['report']['accepted'],run['report']['rejected'],run['report']['published'])==(1,1,1)
+    assert len(current())==1
+
+
+def test_streamed_critical_check_failure_preserves_existing_target(monkeypatch):
+    import app.engine as engine
+    monkeypatch.setattr(engine,'MAX_IN_MEMORY_ROWS',0)
+    initial=run(spec(),[row('existing')],'initial-stream-target')
+    assert initial['status']=='succeeded'
+    before=current()
+    incoming=ingest_bytes(b'id,amount,category,updated_at\nnew,10,a,2026-11-01T12:00:00Z\n','quality.csv')
+    checked=spec(batch_checks=[{'name':'minimum_total','kind':'sum','column':'amount','minimum':100}])
+    result=execute(RunRequest(spec=checked,dataset_ids=[incoming['id']],idempotency_key='failed-stream-check'))
+    assert result['status']=='quality_failed'
+    assert result['report']['published']==0
+    assert current()==before
+
+
 def test_union_and_safe_joins(client):
     a=dataset([{'id':'1','customer':'C1'},{'id':'2','customer':'missing'}]);b=dataset([{'customer':'C1','name':'Ada'}])
     joined=client.post('/api/datasets/merge',json={'dataset_ids':[a,b],'mode':'left_join','left_key':'customer','right_key':'customer'})
@@ -144,6 +181,23 @@ def test_gold_rebuilds_full_current_detail(client):
 @pytest.mark.parametrize('mode,expected',[('upsert',2),('full_refresh',1),('append',2)])
 def test_load_strategies(mode,expected):
     s=spec(load={'mode':mode});run(s,[row()]);assert run(s,[row('2')],'next')['status']=='succeeded';assert len(current())==expected
+
+
+def test_upsert_skips_existing_keys_by_default_and_can_explicitly_update():
+    first=run(spec(),[row(amount=10)])
+    skipped=run(spec(),[row(amount=99)],'skip-existing')
+    assert first['status']==skipped['status']=='succeeded'
+    assert skipped['report']['accepted']==1
+    assert skipped['report']['published']==0
+    assert skipped['report']['skipped_existing']==1
+    assert current()[0]['amount']==10
+
+    update_spec=spec(load={'mode':'upsert','duplicate_policy':'update'})
+    updated=run(update_spec,[row(amount=99)],'update-existing')
+    assert updated['status']=='succeeded'
+    assert updated['report']['published']==1
+    assert updated['report']['skipped_existing']==0
+    assert current()[0]['amount']==99
 
 
 def test_append_conflict_blocks_atomically():

@@ -8,6 +8,7 @@
 | Quality gate failed | Inspect quarantine and batch checks. Fix data/mapping or propose a reviewed rule change. Do not weaken critical rules solely to get a green run. |
 | Warning check failed | Review the reported value/threshold and owner decision; publication may have succeeded. Warning reports do not imply an alert email was delivered. |
 | Append collision | Choose a new immutable key/data batch or deliberately use an upsert recipe after review. |
+| Existing key skipped during upsert | Review `skipped_existing` in the run report. Upsert defaults to preserving existing rows; select the explicit update policy only when overwriting those keys is intended. |
 | Partition overwrite blocked | Check explicit partition values and keys colliding outside scope. Never widen overwrite partitions without impact review. |
 | SCD history mismatch | Stop and reconcile/migrate current detail against history. Do not switch SCD2 to a different strategy to bypass the check. |
 | Gold failed | Verify transaction rollback and prior published Gold. Investigate nonfinite values, limits or contract/config errors; replay retained sources with a new key after repair. |

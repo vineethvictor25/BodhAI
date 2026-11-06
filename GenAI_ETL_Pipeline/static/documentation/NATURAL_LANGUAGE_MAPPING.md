@@ -1,6 +1,6 @@
-# Natural-language schema mapping — v1.1
+# Natural-language schema mapping
 
-Pipeline Studio can now infer semantic **source-to-target** mappings from natural-language instructions and real source profiles using the configured OpenAI model. This is separate from target schema generation. The prior alias/fuzzy mapper remains available as the offline **Preview mappings** operation.
+Pipeline Studio can now infer semantic **source-to-target** mappings from natural-language instructions and real source profiles using the configured model route. **Generate AI mappings** maps to an existing contract. **Infer schema, keys & mappings** can propose a new target contract and equivalent fields across sources. The prior alias/fuzzy mapper remains available as the offline **Preview mappings** operation.
 
 ## Use it
 
@@ -14,13 +14,13 @@ Pipeline Studio can now infer semantic **source-to-target** mappings from natura
 5. Click **Generate AI mappings**. Review the source path, explanation, evidence and confidence for each target column. Edit a source selection if needed. Low-confidence matches are left unselected; the suggested path is shown separately. Resolve every required field.
 6. Click **Approve reviewed mappings**, then **Run reviewed pipeline**. The engine reads the persisted approved decisions; it does not silently revert to fuzzy inference.
 
-For multiple source files, each file gets independent mappings to the same target contract. For example, `merch_ref` in CSV and `product.code` in JSON can both populate `product_id`. A source field may be used only once within each dataset. There is no join discovery, aggregation, expression generation, or source-specific unit conversion in this feature. Configure supported column transforms separately before running.
+Multiple sources are analyzed jointly. For append, each source receives bindings to the common target. For join, review the key relationship and row impact, then stage the combined source and approve its final bindings. The **Data model** diagram traces the selected target field and reflects mapping edits. Configure supported transforms and aggregations in the target recipe. See [Multi-source mapping](MULTI_SOURCE_MAPPING.md).
 
 ## What the model receives
 
-The request includes your instructions, the target specification, source name, row count, flattened paths, observed type counts, missing/null counts, and up to **three unique sample values per field, truncated to 80 characters each**. It does not send whole source files. Profiles inspect the complete bounded dataset; only the bounded profile goes to the model. Each request supports at most 100 flattened fields per source and at most five selected sources. Instructions and model explanations are stored in the local proposal audit data.
+The request includes your instructions, the target specification, source name, row count, flattened paths, observed type counts, missing/null counts, and up to **three unique sample values per field, truncated to 80 characters each**. It does not send whole source files. Profiles use up to 1,000 sampled rows plus available schema inventory. Full-snapshot key and join validation runs locally. Each request supports at most 100 flattened fields per source and at most five selected sources. Instructions and model explanations are stored in the local proposal audit data.
 
-Sample values can still contain sensitive information. Review data classification before using real sources. The adapter uses `store=false`; that flag is not a claim of zero data retention by the provider. See the [Responses structured-output documentation](https://developers.openai.com/api/docs/guides/structured-outputs).
+The profile withholds samples for detected or declared sensitive fields and protected tokens. Classify sources before sending requests to an external model because automated detection is heuristic. See [Column PII controls](PII_HANDLING.md) and [model routing](MULTI_MODEL_ROUTING.md).
 
 ## Validation and approval
 
@@ -39,6 +39,10 @@ The shared development token records approval actions but does not establish ind
 ## API
 
 ```text
+POST /api/mappings/discover
+  {"instructions":"...","dataset_ids":["...","..."],"combination_mode":"auto"}
+  -> inferred schema, field equivalences, key evidence and combination review
+
 POST /api/mappings/generate
   {"instructions":"...","spec":{...},"dataset_ids":["..."]}
   -> persisted proposal with per-source mappings and model metadata
@@ -58,4 +62,4 @@ If `approved_mapping_id` is omitted, the existing deterministic mapper is used. 
 
 ## Live API troubleshooting
 
-`PROVIDER=openai`, `OPENAI_API_KEY` and `OPENAI_MODEL` must be configured on the backend. An HTTP 429 may indicate a temporary rate limit or a billing/quota issue. The adapter reports known `insufficient_quota`/billing-limit errors explicitly and does not retry them. Resolve the API project's available credits and budget before retrying. No key is sent to the frontend or included in project packages.
+Configure the selected provider and model on the backend. Mapping may request one correction on the same route within call and time budgets. If the correction is rate-limited, discovery can keep a partial draft visible for review. When no usable result exists, the app reports the rate limit and shows the provider wait time when available. **Preview mappings** remains available offline. See [model routing](MULTI_MODEL_ROUTING.md).

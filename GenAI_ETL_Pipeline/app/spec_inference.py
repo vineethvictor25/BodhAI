@@ -59,9 +59,14 @@ def _is_unique(values: list[object]) -> bool:
 
 
 def suggest_spec(dataset_id: str) -> dict:
-    dataset = store.get_dataset(dataset_id)
-    rows = dataset["rows"]
-    paths = list(dict.fromkeys(path for row in rows for path in flatten(row)))
+    dataset = store.get_dataset_info(dataset_id)
+    if dataset["chunked"]:
+        _,rows=next(store.iter_dataset_rows(dataset_id), (1,[]))
+        paths=list(dataset["metadata"].get("schema",{}))
+    else:
+        dataset=store.get_dataset(dataset_id)
+        rows=dataset["rows"]
+        paths = list(dict.fromkeys(path for row in rows for path in flatten(row)))
     if not paths:
         raise ValueError("The uploaded source has no scalar columns to build a pipeline from")
     if len(paths) > 50:
@@ -121,6 +126,8 @@ def suggest_spec(dataset_id: str) -> dict:
         primary_key=primary_key,
     )
     warnings = []
+    if dataset.get("chunked"):
+        warnings.append("Types and primary-key uniqueness were sampled from the first 25,000 rows; verify the full source before publication.")
     if not candidates:
         warnings.append(
             f"No unique nonempty key was detected; {primary_path} was selected as a provisional primary key. Verify it before running."
