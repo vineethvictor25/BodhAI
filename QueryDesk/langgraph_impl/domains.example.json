@@ -1,0 +1,16 @@
+[
+  {
+    "id": "customer_sales",
+    "name": "Customer sales",
+    "description": "Customer purchasing patterns, orders, item quantities and applied discounts. Other permitted tables may be needed for payments or fulfilment questions.",
+    "keywords": ["customers", "sales", "purchases", "discounts"],
+    "tables": ["customers", "orders", "order_items", "order_discounts"]
+  },
+  {
+    "id": "stock_planning",
+    "name": "Stock planning",
+    "description": "Product stock, warehouse balances and inventory movement history. These tables are a starting point rather than a mandatory query boundary.",
+    "keywords": ["stock", "inventory", "warehouse", "replenishment"],
+    "tables": ["products", "warehouses", "inventory", "inventory_movements"]
+  }
+]
