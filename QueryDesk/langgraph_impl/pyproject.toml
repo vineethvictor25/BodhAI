@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "standalone-langgraph-nlq"
+version = "0.1.0"
+description = "Independent multi-agent NLQ-to-SQL application using LangGraph and LangChain"
+requires-python = ">=3.11"
+dynamic = ["dependencies"]
+
+[project.scripts]
+langgraph-nlq = "langgraph_impl.__main__:main"
+
+[project.optional-dependencies]
+sources = ["SQLAlchemy>=2.0,<2.1", "sqlglot>=26,<30", "psycopg[binary]>=3.2,<4", "PyMySQL>=1.1,<2"]
+
+[tool.setuptools]
+packages = ["langgraph_impl"]
+package-dir = {langgraph_impl = "."}
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.package-data]
+langgraph_impl = ["*.sql", "knowledge/*.json", "knowledge_sqlserver_multi_example/*.json", ".env.example", "graph.mmd", "sources*.example.json", "domains.example.json", "encryption.example.json", "model_policy.example.json", "row_security.example.json"]
