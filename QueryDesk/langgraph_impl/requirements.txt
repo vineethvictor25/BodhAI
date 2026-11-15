@@ -1,0 +1,37 @@
+# Complete server installation: application, API, TLS and every registered connector.
+langgraph==1.2.21
+langchain-openai==1.7.4
+python-dotenv==1.2.4
+fastapi>=0.115,<1.0
+httpx==0.28.1
+uvicorn>=0.30,<1.0
+cryptography>=49,<51
+sqlglot>=26,<30
+
+# Shared remote SQL and HTTPS transports.
+SQLAlchemy>=2.0,<2.1
+requests>=2.32,<3
+certifi>=2026.10
+pyOpenSSL>=26.4,<27
+
+# PostgreSQL and MySQL (including compatible managed cloud services).
+psycopg[binary]>=3.2,<4
+PyMySQL>=1.1,<2
+
+# SQL Server / Azure SQL, Oracle and Snowflake.
+sqlalchemy-pytds>=1.0,<2
+python-tds>=1.17,<2
+oracledb>=3.4,<27
+snowflake-sqlalchemy>=2.1,<3
+snowflake-connector-python>=5.2,<6
+
+# Amazon Redshift and Google BigQuery.
+sqlalchemy-redshift>=1.0,<2
+psycopg2-binary>=2.9,<3
+google-cloud-bigquery>=3.34,<4
+google-auth>=2.14,<3
+
+# Local Python visualization renderers; Plotly also supplies the browser asset.
+plotly==7.1.0
+matplotlib==3.11.2
+seaborn==0.13.2
