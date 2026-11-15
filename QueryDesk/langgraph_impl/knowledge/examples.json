@@ -1,0 +1,196 @@
+[
+  {
+    "id": "sales_region_orders",
+    "question": "Count completed orders by customer region",
+    "sql": "SELECT c.region,COUNT(*) order_count FROM orders o JOIN customers c USING(customer_id) WHERE o.status=:status GROUP BY c.region ORDER BY c.region",
+    "parameters": {
+      "status": "completed"
+    },
+    "tables": [
+      "orders",
+      "customers"
+    ],
+    "tags": [
+      "sales",
+      "orders",
+      "completed",
+      "region"
+    ],
+    "review": "Reviewed sample SQL; adapt filters to the user's question"
+  },
+  {
+    "id": "sales_order_amounts",
+    "question": "Compute order amounts after applied discounts",
+    "sql": "WITH items AS (SELECT order_id,SUM(quantity*unit_price_cents) amount FROM order_items GROUP BY order_id),\n        discounts AS (SELECT order_id,SUM(amount_cents) amount FROM order_discounts GROUP BY order_id)\n        SELECT o.order_id,(i.amount-COALESCE(d.amount,0))/100.0 total_inr FROM orders o\n        JOIN items i USING(order_id) LEFT JOIN discounts d USING(order_id) ORDER BY o.order_id",
+    "parameters": {},
+    "tables": [
+      "orders",
+      "order_items",
+      "order_discounts"
+    ],
+    "tags": [
+      "discounted order value",
+      "discounts",
+      "orders",
+      "sales"
+    ],
+    "review": "Reviewed sample SQL; adapt filters to the user's question"
+  },
+  {
+    "id": "payments_customer",
+    "question": "Show succeeded payment totals per customer in INR",
+    "sql": "SELECT c.name,SUM(p.amount_cents)/100.0 captured_inr FROM payments p\n        JOIN orders o USING(order_id) JOIN customers c USING(customer_id) WHERE p.status=:status\n        GROUP BY c.customer_id,c.name ORDER BY c.customer_id",
+    "parameters": {
+      "status": "succeeded"
+    },
+    "tables": [
+      "payments",
+      "orders",
+      "customers"
+    ],
+    "tags": [
+      "captured payments",
+      "customer",
+      "cash"
+    ],
+    "review": "Reviewed sample SQL; adapt filters to the user's question"
+  },
+  {
+    "id": "payments_net_cash",
+    "question": "Compute net collected cash after successful refunds",
+    "sql": "SELECT (SELECT COALESCE(SUM(amount_cents),0) FROM payments WHERE status=:status)/100.0\n - (SELECT COALESCE(SUM(amount_cents),0) FROM refunds WHERE status=:status)/100.0 AS net_cash_inr",
+    "parameters": {
+      "status": "succeeded"
+    },
+    "tables": [
+      "payments",
+      "refunds"
+    ],
+    "tags": [
+      "net cash",
+      "net collected cash",
+      "refunds"
+    ],
+    "review": "Reviewed sample SQL; adapt filters to the user's question"
+  },
+  {
+    "id": "payments_monthly_cash",
+    "question": "Report monthly net cash using capture and refund event dates",
+    "sql": "SELECT month,SUM(amount)/100.0 AS net_cash_inr FROM (\n SELECT substr(paid_at,1,7) month,amount_cents amount FROM payments WHERE status=:status\n UNION ALL SELECT substr(refunded_at,1,7),-amount_cents FROM refunds WHERE status=:status\n) GROUP BY month ORDER BY month",
+    "parameters": {
+      "status": "succeeded"
+    },
+    "tables": [
+      "payments",
+      "refunds"
+    ],
+    "tags": [
+      "monthly net cash",
+      "cash",
+      "month",
+      "refunds",
+      "paid_at"
+    ],
+    "review": "Reviewed sample SQL; adapt filters to the user's question"
+  },
+  {
+    "id": "payments_outstanding",
+    "question": "Compute outstanding balances on non-cancelled orders",
+    "sql": "WITH lines AS (\n SELECT order_id,SUM(quantity*unit_price_cents) gross FROM order_items GROUP BY order_id\n), discounts AS (SELECT order_id,SUM(amount_cents) amount FROM order_discounts GROUP BY order_id),\npaid AS (SELECT order_id,SUM(amount_cents) amount FROM payments WHERE status=:paid GROUP BY order_id)\nSELECT SUM(l.gross-COALESCE(d.amount,0)-COALESCE(p.amount,0))/100.0 FROM orders o\nJOIN lines l USING(order_id) LEFT JOIN discounts d USING(order_id) LEFT JOIN paid p USING(order_id)\nWHERE o.status <> :cancelled",
+    "parameters": {
+      "paid": "succeeded",
+      "cancelled": "cancelled"
+    },
+    "tables": [
+      "orders",
+      "order_items",
+      "order_discounts",
+      "payments"
+    ],
+    "tags": [
+      "outstanding balance",
+      "discounted",
+      "unpaid",
+      "payments"
+    ],
+    "review": "Reviewed sample SQL; adapt filters to the user's question"
+  },
+  {
+    "id": "customers_no_orders",
+    "question": "Find customers without any orders",
+    "sql": "SELECT c.name FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id=c.customer_id) ORDER BY c.customer_id",
+    "parameters": {},
+    "tables": [
+      "customers",
+      "orders"
+    ],
+    "tags": [
+      "customer",
+      "never",
+      "no orders"
+    ],
+    "review": "Reviewed sample SQL; adapt filters to the user's question"
+  },
+  {
+    "id": "inventory_threshold",
+    "question": "List product and warehouse names with stock at or below a supplied threshold",
+    "sql": "SELECT p.name,w.name,i.quantity FROM inventory i JOIN products p USING(product_id)\n        JOIN warehouses w USING(warehouse_id) WHERE i.quantity<=:threshold ORDER BY w.warehouse_id,p.product_id",
+    "parameters": {
+      "threshold": 5
+    },
+    "tables": [
+      "inventory",
+      "products",
+      "warehouses"
+    ],
+    "tags": [
+      "low stock",
+      "warehouse",
+      "inventory",
+      "quantity"
+    ],
+    "review": "Reviewed sample SQL; adapt filters to the user's question"
+  },
+  {
+    "id": "inventory_inbound",
+    "question": "Show remaining receipt quantities for a purchase order",
+    "sql": "WITH receipts AS (\n SELECT purchase_order_id,product_id,SUM(quantity_change) qty FROM inventory_movements\n WHERE movement_type=:kind GROUP BY purchase_order_id,product_id\n) SELECT p.name,i.ordered_quantity-COALESCE(r.qty,0) AS outstanding_units\nFROM purchase_order_items i JOIN purchase_orders o USING(purchase_order_id)\nJOIN products p USING(product_id) LEFT JOIN receipts r USING(purchase_order_id,product_id)\nWHERE o.purchase_order_id=:po ORDER BY p.product_id",
+    "parameters": {
+      "kind": "purchase_receipt",
+      "po": 2
+    },
+    "tables": [
+      "inventory_movements",
+      "purchase_order_items",
+      "purchase_orders",
+      "products"
+    ],
+    "tags": [
+      "purchase",
+      "partially received",
+      "outstanding inbound",
+      "receipt"
+    ],
+    "review": "Reviewed sample SQL; adapt filters to the user's question"
+  },
+  {
+    "id": "segments_captured",
+    "question": "Compare succeeded payment totals across customer segments",
+    "sql": "SELECT s.name,SUM(p.amount_cents)/100.0 AS captured_inr FROM payments p\nJOIN orders o USING(order_id) JOIN customer_profiles cp ON cp.customer_id=o.customer_id\nJOIN customer_segments s USING(segment_id) WHERE p.status=:status GROUP BY s.segment_id,s.name ORDER BY s.name",
+    "parameters": {
+      "status": "succeeded"
+    },
+    "tables": [
+      "payments",
+      "orders",
+      "customer_profiles",
+      "customer_segments"
+    ],
+    "tags": [
+      "segment",
+      "captured payments",
+      "customer"
+    ],
+    "review": "Reviewed sample SQL; adapt filters to the user's question"
+  }
+]
