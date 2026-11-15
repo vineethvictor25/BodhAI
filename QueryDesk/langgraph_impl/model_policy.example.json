@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "sources": {
+    "sample": {"classification": "internal", "require_local": false}
+  },
+  "profiles": [
+    {
+      "id": "example-groq",
+      "endpoint": "https://api.groq.com/openai/v1",
+      "models": ["openai/gpt-oss-20b", "openai/gpt-oss-120b"],
+      "approved": false,
+      "classifications": ["public", "internal"],
+      "allow_detected_pii": false,
+      "max_payload_bytes": 65536
+    },
+    {
+      "id": "example-openai",
+      "endpoint": "https://api.openai.com/v1",
+      "models": ["gpt-4.1-mini"],
+      "approved": false,
+      "classifications": ["public", "internal"],
+      "allow_detected_pii": false,
+      "max_payload_bytes": 65536
+    },
+    {
+      "id": "example-anthropic-claude",
+      "endpoint": "https://api.anthropic.com/v1",
+      "models": ["claude-opus-5-5"],
+      "approved": false,
+      "classifications": ["public", "internal"],
+      "allow_detected_pii": false,
+      "max_payload_bytes": 65536
+    },
+    {
+      "id": "example-google-gemini",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "models": ["gemini-4-hydrogen"],
+      "approved": false,
+      "classifications": ["public", "internal"],
+      "allow_detected_pii": false,
+      "max_payload_bytes": 65536
+    }
+  ]
+}
