@@ -1,0 +1,10 @@
+{
+  "workspaces": {
+    "crm": {"name": "CRM", "description": "Registered customer records from DatabaseA.", "tables": ["crm_customers"], "keywords": ["customer", "CRM"]},
+    "sales": {"name": "Sales", "description": "Registered order records from DatabaseB.", "tables": ["sales_orders"], "keywords": ["order", "sales", "total"]}
+  },
+  "metrics": [],
+  "relationship_rules": ["sales_orders.CustomerID joins crm_customers.CustomerID in this example. Review the actual keys before deployment; include tenant/company keys where needed."],
+  "ambiguous_terms": {},
+  "policies": ["Use registered logical table IDs or the exact physical_table metadata with explicit SQL aliases.", "Currency, tax treatment and monetary units are not assumed. Ask for definitions when the question needs them."]
+}
