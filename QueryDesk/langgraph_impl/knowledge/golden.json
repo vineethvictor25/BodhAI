@@ -1,0 +1,643 @@
+[
+  {
+    "id": "order_count",
+    "question": "How many orders exist across all dates? Return only the count.",
+    "reference_sql": "SELECT COUNT(*) FROM orders",
+    "parameters": {},
+    "tables": [
+      "orders"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        25
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "completed_count",
+    "question": "How many orders have completed status? Return only the count.",
+    "reference_sql": "SELECT COUNT(*) FROM orders WHERE status=:status",
+    "parameters": {
+      "status": "completed"
+    },
+    "tables": [
+      "orders"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        16
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "orders_monthly",
+    "question": "Return year-month and order count for all orders, sorted by month.",
+    "reference_sql": "SELECT substr(ordered_at,1,7),COUNT(*) FROM orders GROUP BY 1 ORDER BY 1",
+    "parameters": {},
+    "tables": [
+      "orders"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        "2026-09",
+        4
+      ],
+      [
+        "2026-10",
+        7
+      ],
+      [
+        "2026-11",
+        14
+      ]
+    ],
+    "ordered": true,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "customers_without_orders",
+    "question": "Return only the names of customers who have never placed an order.",
+    "reference_sql": "SELECT name FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id=c.customer_id)",
+    "parameters": {},
+    "tables": [
+      "customers",
+      "orders"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        "Noor"
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "unsold_products",
+    "question": "Return only the names of products never included in an order.",
+    "reference_sql": "SELECT name FROM products p WHERE NOT EXISTS (SELECT 1 FROM order_items i WHERE i.product_id=p.product_id)",
+    "parameters": {},
+    "tables": [
+      "products",
+      "order_items"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        "Portable SSD"
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "captured_total",
+    "question": "Across all dates, return only the total succeeded payments in INR.",
+    "reference_sql": "SELECT SUM(amount_cents)/100.0 FROM payments WHERE status=:status",
+    "parameters": {
+      "status": "succeeded"
+    },
+    "tables": [
+      "payments"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        9125.0
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "refund_total",
+    "question": "Across all dates, return only the total succeeded refunds in INR.",
+    "reference_sql": "SELECT SUM(amount_cents)/100.0 FROM refunds WHERE status=:status",
+    "parameters": {
+      "status": "succeeded"
+    },
+    "tables": [
+      "refunds"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        1630.0
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "net_cash",
+    "question": "Across all dates, return only net collected cash in INR: succeeded payments minus succeeded refunds.",
+    "reference_sql": "SELECT (SELECT COALESCE(SUM(amount_cents),0) FROM payments WHERE status=:status)/100.0\n - (SELECT COALESCE(SUM(amount_cents),0) FROM refunds WHERE status=:status)/100.0 AS net_cash_inr",
+    "parameters": {
+      "status": "succeeded"
+    },
+    "tables": [
+      "payments",
+      "refunds"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        7495.0
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "pending_refunds",
+    "question": "Return only the total pending refund amount in INR.",
+    "reference_sql": "SELECT SUM(amount_cents)/100.0 FROM refunds WHERE status=:status",
+    "parameters": {
+      "status": "pending"
+    },
+    "tables": [
+      "refunds"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        225.0
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "discount_total",
+    "question": "Return only the total actual applied order discount amount in INR.",
+    "reference_sql": "SELECT SUM(amount_cents)/100.0 FROM order_discounts",
+    "parameters": {},
+    "tables": [
+      "order_discounts"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        1045.0
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "outstanding_total",
+    "question": "Return only total outstanding order balance in INR, after discounts and succeeded payments, excluding cancelled orders.",
+    "reference_sql": "WITH lines AS (\n SELECT order_id,SUM(quantity*unit_price_cents) gross FROM order_items GROUP BY order_id\n), discounts AS (SELECT order_id,SUM(amount_cents) amount FROM order_discounts GROUP BY order_id),\npaid AS (SELECT order_id,SUM(amount_cents) amount FROM payments WHERE status=:paid GROUP BY order_id)\nSELECT SUM(l.gross-COALESCE(d.amount,0)-COALESCE(p.amount,0))/100.0 FROM orders o\nJOIN lines l USING(order_id) LEFT JOIN discounts d USING(order_id) LEFT JOIN paid p USING(order_id)\nWHERE o.status <> :cancelled",
+    "parameters": {
+      "paid": "succeeded",
+      "cancelled": "cancelled"
+    },
+    "tables": [
+      "orders",
+      "order_items",
+      "order_discounts",
+      "payments"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        1880.0
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "monthly_net_cash",
+    "question": "Return year-month and net collected cash in INR, ordered by month; use payment dates and refund dates respectively.",
+    "reference_sql": "SELECT month,SUM(amount)/100.0 AS net_cash_inr FROM (\n SELECT substr(paid_at,1,7) month,amount_cents amount FROM payments WHERE status=:status\n UNION ALL SELECT substr(refunded_at,1,7),-amount_cents FROM refunds WHERE status=:status\n) GROUP BY month ORDER BY month",
+    "parameters": {
+      "status": "succeeded"
+    },
+    "tables": [
+      "payments",
+      "refunds"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        "2026-09",
+        1890.0
+      ],
+      [
+        "2026-10",
+        1940.0
+      ],
+      [
+        "2026-11",
+        3665.0
+      ]
+    ],
+    "ordered": true,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "zero_stock",
+    "question": "Return product name and warehouse name for zero stock locations, with no other columns.",
+    "reference_sql": "SELECT p.name,w.name FROM inventory i JOIN products p USING(product_id) JOIN warehouses w USING(warehouse_id) WHERE i.quantity=0",
+    "parameters": {},
+    "tables": [
+      "inventory",
+      "products",
+      "warehouses"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        "Webcam",
+        "Kolkata Depot"
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "purchase_partial",
+    "question": "For purchase order 2, return product name and remaining units awaiting receipt, sorted by product id.",
+    "reference_sql": "WITH receipts AS (\n SELECT purchase_order_id,product_id,SUM(quantity_change) qty FROM inventory_movements\n WHERE movement_type=:kind GROUP BY purchase_order_id,product_id\n) SELECT p.name,i.ordered_quantity-COALESCE(r.qty,0) AS outstanding_units\nFROM purchase_order_items i JOIN purchase_orders o USING(purchase_order_id)\nJOIN products p USING(product_id) LEFT JOIN receipts r USING(purchase_order_id,product_id)\nWHERE o.purchase_order_id=:po ORDER BY p.product_id",
+    "parameters": {
+      "kind": "purchase_receipt",
+      "po": 2
+    },
+    "tables": [
+      "inventory_movements",
+      "purchase_order_items",
+      "purchase_orders",
+      "products"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        "USB-C Dock",
+        3
+      ],
+      [
+        "Laptop Stand",
+        5
+      ]
+    ],
+    "ordered": true,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "failed_payments",
+    "question": "Return only the number of failed payment attempts.",
+    "reference_sql": "SELECT COUNT(*) FROM payments WHERE status=:status",
+    "parameters": {
+      "status": "failed"
+    },
+    "tables": [
+      "payments"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        3
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "segment_cash",
+    "question": "Return segment name and succeeded payment total in INR, sorted alphabetically by segment name.",
+    "reference_sql": "SELECT s.name,SUM(p.amount_cents)/100.0 AS captured_inr FROM payments p\nJOIN orders o USING(order_id) JOIN customer_profiles cp ON cp.customer_id=o.customer_id\nJOIN customer_segments s USING(segment_id) WHERE p.status=:status GROUP BY s.segment_id,s.name ORDER BY s.name",
+    "parameters": {
+      "status": "succeeded"
+    },
+    "tables": [
+      "payments",
+      "orders",
+      "customer_profiles",
+      "customer_segments"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        "Business",
+        4185.0
+      ],
+      [
+        "New",
+        980.0
+      ],
+      [
+        "Retail",
+        2190.0
+      ],
+      [
+        "VIP",
+        1770.0
+      ]
+    ],
+    "ordered": true,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "stacked_promotions",
+    "question": "Return order id and count of promotion-linked discounts for orders with at least two, sorted by order id.",
+    "reference_sql": "SELECT order_id,COUNT(*) FROM order_discounts WHERE promotion_id IS NOT NULL GROUP BY order_id HAVING COUNT(*)>=2 ORDER BY order_id",
+    "parameters": {},
+    "tables": [
+      "order_discounts"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        119,
+        2
+      ]
+    ],
+    "ordered": true,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "received_returns",
+    "question": "Return only the number of received item return records.",
+    "reference_sql": "SELECT COUNT(*) FROM returns WHERE status=:status",
+    "parameters": {
+      "status": "received"
+    },
+    "tables": [
+      "returns"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        3
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "gross_value",
+    "question": "Return only gross order value in INR, before discounts, for all order statuses.",
+    "reference_sql": "SELECT SUM(quantity*unit_price_cents)/100.0 FROM order_items",
+    "parameters": {},
+    "tables": [
+      "order_items"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        12250.0
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "discounted_value",
+    "question": "Return only discounted order value in INR across all statuses, using actual applied discounts.",
+    "reference_sql": "SELECT (SELECT SUM(quantity*unit_price_cents) FROM order_items)/100.0\n - (SELECT SUM(amount_cents) FROM order_discounts)/100.0",
+    "parameters": {},
+    "tables": [
+      "order_items",
+      "order_discounts"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        11205.0
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "customer_counts",
+    "question": "Return customer name and order count including customers with zero orders, sorted by customer id.",
+    "reference_sql": "SELECT c.name,COUNT(o.order_id) FROM customers c LEFT JOIN orders o USING(customer_id) GROUP BY c.customer_id ORDER BY c.customer_id",
+    "parameters": {},
+    "tables": [
+      "customers",
+      "orders"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        "Mira",
+        3
+      ],
+      [
+        "Arjun",
+        2
+      ],
+      [
+        "Leena",
+        2
+      ],
+      [
+        "Kabir",
+        2
+      ],
+      [
+        "Dev",
+        3
+      ],
+      [
+        "Nisha",
+        3
+      ],
+      [
+        "Ravi",
+        3
+      ],
+      [
+        "Sana",
+        2
+      ],
+      [
+        "Omar",
+        2
+      ],
+      [
+        "Isha",
+        2
+      ],
+      [
+        "Tara",
+        1
+      ],
+      [
+        "Noor",
+        0
+      ]
+    ],
+    "ordered": true,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "total_stock",
+    "question": "Return only the sum of stock on hand units across all warehouse/product snapshots.",
+    "reference_sql": "SELECT SUM(quantity) FROM inventory",
+    "parameters": {},
+    "tables": [
+      "inventory"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        590
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "inbound_units",
+    "question": "Return only total outstanding inbound units across non-cancelled purchase orders, subtracting actual received units.",
+    "reference_sql": "WITH r AS (SELECT purchase_order_id,product_id,SUM(quantity_change) qty FROM inventory_movements\n        WHERE movement_type=:kind GROUP BY purchase_order_id,product_id)\n        SELECT SUM(i.ordered_quantity-COALESCE(r.qty,0)) FROM purchase_order_items i\n        JOIN purchase_orders p USING(purchase_order_id) LEFT JOIN r USING(purchase_order_id,product_id)\n        WHERE p.status<>:cancelled",
+    "parameters": {
+      "kind": "purchase_receipt",
+      "cancelled": "cancelled"
+    },
+    "tables": [
+      "inventory_movements",
+      "purchase_order_items",
+      "purchase_orders"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        13
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "missing_emails",
+    "question": "Return only customer names with a NULL email in their profile, sorted by customer id.",
+    "reference_sql": "SELECT c.name FROM customers c JOIN customer_profiles p USING(customer_id) WHERE p.email IS NULL ORDER BY c.customer_id",
+    "parameters": {},
+    "tables": [
+      "customers",
+      "customer_profiles"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        "Omar"
+      ],
+      [
+        "Noor"
+      ]
+    ],
+    "ordered": true,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "manual_discount",
+    "question": "Return only total manual order discounts in INR, where no promotion is linked.",
+    "reference_sql": "SELECT SUM(amount_cents)/100.0 FROM order_discounts WHERE promotion_id IS NULL",
+    "parameters": {},
+    "tables": [
+      "order_discounts"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        100.0
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "cancellation_refund",
+    "question": "Return only total succeeded refund amount in INR for refunds without an associated return.",
+    "reference_sql": "SELECT SUM(amount_cents)/100.0 FROM refunds WHERE status=:status AND return_id IS NULL",
+    "parameters": {
+      "status": "succeeded"
+    },
+    "tables": [
+      "refunds"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        1000.0
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "noncancelled_value",
+    "question": "Return only discounted order value in INR for non-cancelled orders.",
+    "reference_sql": "WITH i AS (SELECT order_id,SUM(quantity*unit_price_cents) amount FROM order_items GROUP BY order_id),\n        d AS (SELECT order_id,SUM(amount_cents) amount FROM order_discounts GROUP BY order_id)\n        SELECT SUM(i.amount-COALESCE(d.amount,0))/100.0 FROM orders o JOIN i USING(order_id)\n        LEFT JOIN d USING(order_id) WHERE o.status<>:cancelled",
+    "parameters": {
+      "cancelled": "cancelled"
+    },
+    "tables": [
+      "orders",
+      "order_items",
+      "order_discounts"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        10005.0
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "unpaid_order_count",
+    "question": "Return only the count of non-cancelled orders that have no succeeded payment.",
+    "reference_sql": "SELECT COUNT(*) FROM orders o WHERE o.status<>:cancelled AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.order_id=o.order_id AND p.status=:paid)",
+    "parameters": {
+      "cancelled": "cancelled",
+      "paid": "succeeded"
+    },
+    "tables": [
+      "orders",
+      "payments"
+    ],
+    "expected_status": "answered",
+    "expected_rows": [
+      [
+        3
+      ]
+    ],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "ambiguous_revenue",
+    "question": "What is our revenue?",
+    "reference_sql": null,
+    "parameters": {},
+    "tables": [],
+    "expected_status": "clarification",
+    "expected_rows": [],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  },
+  {
+    "id": "ambiguous_profit",
+    "question": "What is our profit?",
+    "reference_sql": null,
+    "parameters": {},
+    "tables": [],
+    "expected_status": "clarification",
+    "expected_rows": [],
+    "ordered": false,
+    "absolute_tolerance": 1e-06
+  }
+]
