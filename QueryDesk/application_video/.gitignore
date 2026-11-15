@@ -1,0 +1,7 @@
+.tools/
+capture/raw/
+render/
+*.log
+
+audio/
+capture/
