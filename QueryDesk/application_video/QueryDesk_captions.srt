@@ -1,0 +1,218 @@
+1
+00:00:00,000 --> 00:00:05,415
+A business question sounds simple: which customer groups
+have outstanding balances? But the
+
+2
+00:00:05,415 --> 00:00:10,831
+answer can be spread across orders, payments, discounts,
+and refunds. Business teams wait
+
+3
+00:00:10,831 --> 00:00:16,246
+for someone to write SQL. Analysts spend time tracing
+joins, checking definitions, and
+
+4
+00:00:16,246 --> 00:00:18,746
+explaining where a number came from.
+
+5
+00:00:19,583 --> 00:00:23,831
+Query Desk turns an English question into a reviewable
+database query and a
+
+6
+00:00:23,831 --> 00:00:28,079
+plain language answer. Business and BI users work in a
+browser. They can
+
+7
+00:00:28,079 --> 00:00:32,327
+see the proposed tables, inspect the SQL before it runs,
+and read the
+
+8
+00:00:32,327 --> 00:00:35,594
+returned rows in a table, together with a concise
+explanation.
+
+9
+00:00:36,417 --> 00:00:41,838
+Choose a configured data source and business domain, then
+ask your question. The
+
+10
+00:00:41,838 --> 00:00:47,258
+application interprets the task and proposes relevant
+tables. You confirm those tables before
+
+11
+00:00:47,258 --> 00:00:52,679
+SQL generation. Next, review the SQL, filters, and limits.
+Only after you approve
+
+12
+00:00:52,679 --> 00:00:56,432
+does the application read data and present the answer.
+
+13
+00:00:57,250 --> 00:01:03,072
+Behind the interface, a central Lang Graph orchestrator
+coordinates specialized roles. The intent
+
+14
+00:01:03,072 --> 00:01:08,893
+agent understands the question. Schema and column
+selection identify useful metadata. The SQL
+
+15
+00:01:08,893 --> 00:01:14,715
+agent creates the query, and validation checks its
+structure and reviews its meaning.
+
+16
+00:01:14,715 --> 00:01:20,537
+Execution runs approved reads. The response agent explains
+the returned results. Business definitions
+
+17
+00:01:20,537 --> 00:01:24,119
+and reviewed examples provide context throughout the
+workflow.
+
+18
+00:01:24,958 --> 00:01:30,410
+Access starts with a signed in user. Source and domain
+permissions define available
+
+19
+00:01:30,410 --> 00:01:35,862
+data, with configurable row and personal data
+restrictions. SQL approval, read only access,
+
+20
+00:01:35,862 --> 00:01:41,314
+and result limits provide additional controls. Remote
+connections default to verified TLS. These
+
+21
+00:01:41,314 --> 00:01:46,766
+safeguards make the process reviewable, but they do not
+guarantee that every generated
+
+22
+00:01:46,766 --> 00:01:48,443
+query is semantically correct.
+
+23
+00:01:49,581 --> 00:01:54,913
+Let's see the application. This is an isolated
+demonstration with scripted agent responses,
+
+24
+00:01:54,913 --> 00:02:00,245
+the real graph workflow, and a real SQLite sample
+database. We ask for
+
+25
+00:02:00,245 --> 00:02:05,577
+order counts, payments, refunds, and outstanding balances
+by customer segment and region, all
+
+26
+00:02:05,577 --> 00:02:06,397
+in rupees.
+
+27
+00:02:09,354 --> 00:02:15,032
+The application proposes eight related tables and explains
+why they are needed. Orders
+
+28
+00:02:15,032 --> 00:02:20,709
+connect to customers, profiles, and segments. Items,
+discounts, payments, and refunds supply the
+
+29
+00:02:20,709 --> 00:02:25,950
+financial measures. We review the selection, then confirm
+the tables to continue.
+
+30
+00:02:30,126 --> 00:02:35,295
+Now the SQL is ready for review. Filter values are
+separate bound parameters.
+
+31
+00:02:35,295 --> 00:02:40,463
+Item values and the different cash streams are aggregated
+before joining, which avoids
+
+32
+00:02:40,463 --> 00:02:45,632
+multiplying totals. We inspect the selected tables and
+execution limits, then explicitly approve
+
+33
+00:02:45,632 --> 00:02:46,427
+the read.
+
+34
+00:02:48,782 --> 00:02:53,480
+The database returns ten summary rows for twenty two non-
+cancelled orders. The New
+
+35
+00:02:53,480 --> 00:02:58,178
+segment in the West has six hundred and eighty rupees
+outstanding. The table
+
+36
+00:02:58,178 --> 00:03:02,876
+shows the other groups and measures, while the explanation
+states the filters and
+
+37
+00:03:02,876 --> 00:03:06,128
+calculation. The executed SQL remains available below for
+review.
+
+38
+00:03:12,210 --> 00:03:17,389
+The output is more than a sentence. It combines an answer,
+a reason,
+
+39
+00:03:17,389 --> 00:03:22,568
+the data rows, and the executed SQL. Users can provide
+feedback. Wide results
+
+40
+00:03:22,568 --> 00:03:27,747
+scroll horizontally, and limited results are identified.
+Saved history may omit raw rows,
+
+41
+00:03:27,747 --> 00:03:31,731
+so restoring a review does not silently rerun a query.
+
+42
+00:03:32,543 --> 00:03:37,868
+Start with a reviewed business domain, approved
+definitions, and a small set of
+
+43
+00:03:37,868 --> 00:03:43,193
+known questions. Configure access and a suitable model
+provider, then validate results with
+
+44
+00:03:43,193 --> 00:03:48,517
+your business owners. Query Desk supports local and cloud
+connector options. Live warehouse
+
+45
+00:03:48,517 --> 00:03:52,204
+verification and broader accuracy evaluation remain
+deployment specific work.
