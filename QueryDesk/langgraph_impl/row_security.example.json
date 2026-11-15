@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "admin_bypass": true,
+  "attributes": {
+    "groups": {
+      "south_readers": {"regions": ["South"]},
+      "north_readers": {"regions": ["North"]},
+      "south_and_north_readers": {"regions": ["South", "North"]}
+    },
+    "users": {}
+  },
+  "sources": {
+    "sample": {
+      "customers": {"mode": "filtered", "where": [{"column": "region", "op": "in", "attribute": "regions"}]},
+      "customer_profiles": {"mode": "filtered", "parents": [{"table": "customers", "columns": {"customer_id": "customer_id"}}]},
+      "orders": {"mode": "filtered", "parents": [{"table": "customers", "columns": {"customer_id": "customer_id"}}]},
+      "order_items": {"mode": "filtered", "parents": [{"table": "orders", "columns": {"order_id": "order_id"}}]},
+      "payments": {"mode": "filtered", "parents": [{"table": "orders", "columns": {"order_id": "order_id"}}]},
+      "shipments": {"mode": "filtered", "parents": [{"table": "orders", "columns": {"order_id": "order_id"}}, {"table": "warehouses", "columns": {"warehouse_id": "warehouse_id"}}]},
+      "order_discounts": {"mode": "filtered", "parents": [{"table": "orders", "columns": {"order_id": "order_id"}}]},
+      "returns": {"mode": "filtered", "parents": [{"table": "orders", "columns": {"order_id": "order_id"}}]},
+      "refunds": {"mode": "filtered", "parents": [{"table": "payments", "columns": {"payment_id": "payment_id"}}]},
+      "warehouses": {"mode": "filtered", "where": [{"column": "region", "op": "in", "attribute": "regions"}]},
+      "inventory": {"mode": "filtered", "parents": [{"table": "warehouses", "columns": {"warehouse_id": "warehouse_id"}}]},
+      "suppliers": {"mode": "filtered", "where": [{"column": "region", "op": "in", "attribute": "regions"}]},
+      "product_suppliers": {"mode": "filtered", "parents": [{"table": "suppliers", "columns": {"supplier_id": "supplier_id"}}]},
+      "purchase_orders": {"mode": "filtered", "parents": [{"table": "suppliers", "columns": {"supplier_id": "supplier_id"}}, {"table": "warehouses", "columns": {"warehouse_id": "warehouse_id"}}]},
+      "purchase_order_items": {"mode": "filtered", "parents": [{"table": "purchase_orders", "columns": {"purchase_order_id": "purchase_order_id"}}]},
+      "inventory_movements": {"mode": "filtered", "parents": [{"table": "warehouses", "columns": {"warehouse_id": "warehouse_id"}}]},
+      "products": {"mode": "global"},
+      "customer_segments": {"mode": "global"},
+      "promotions": {"mode": "global"}
+    }
+  }
+}
