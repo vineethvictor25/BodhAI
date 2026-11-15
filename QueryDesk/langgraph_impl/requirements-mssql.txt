@@ -1,0 +1,6 @@
+# TLS 1.2 is enforced by the pure Python TDS driver's TLS context.
+SQLAlchemy>=2.0,<2.1
+sqlalchemy-pytds>=1.0,<2
+python-tds>=1.17,<2
+pyOpenSSL>=26.4,<27
+certifi>=2026.10
