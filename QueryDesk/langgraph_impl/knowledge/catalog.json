@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "policies": [
+    "All sample orders are INR. Monetary *_cents fields contain paise: divide by 100.0 for INR.",
+    "Use all available dates unless the question specifies a date filter; state the chosen scope.",
+    "Aggregate independent child tables (items, discounts, payments, refunds) before joining totals to avoid fan-out.",
+    "Use actual applied order_discounts amounts; do not apply promotion percentages a second time.",
+    "Inventory is the current snapshot; inventory_movements is the history, not another stock balance to add to it.",
+    "Business definitions do not grant data access. Application table permissions and actual schema remain authoritative."
+  ],
+  "ambiguous_terms": {
+    "revenue": "Do you mean gross order value, discounted order value, captured payments, or net collected cash?",
+    "profit": "Which cost basis should be used? Supplier reference costs do not establish historical cost of goods or recognized profit."
+  },
+  "workspaces": {
+    "sales": {
+      "description": "Customer orders, products, discounts, promotions and segments",
+      "keywords": ["order", "sale", "customer", "product", "discount", "promotion", "segment", "cancelled", "pending", "unsold"],
+      "tables": ["customers", "customer_profiles", "customer_segments", "orders", "order_items", "products", "promotions", "order_discounts"]
+    },
+    "payments": {
+      "description": "Captured payments, refunds, returns and outstanding balances",
+      "keywords": ["payment", "paid", "cash", "captured", "collected", "refund", "return", "outstanding", "balance", "revenue"],
+      "tables": ["payments", "refunds", "returns", "customers", "customer_profiles", "customer_segments", "orders", "order_items", "order_discounts", "products"]
+    },
+    "inventory": {
+      "description": "Stock, warehouses, suppliers, purchasing, receipts and shipping",
+      "keywords": ["stock", "inventory", "warehouse", "supplier", "purchase", "receipt", "inbound", "shipment", "shipping", "dispatch", "restock"],
+      "tables": ["inventory", "inventory_movements", "warehouses", "products", "suppliers", "product_suppliers", "purchase_orders", "purchase_order_items", "shipments", "orders", "order_items", "returns", "customers"]
+    }
+  },
+  "metrics": [
+    {"id":"order_count","name":"Order count","aliases":["how many orders","number of orders","order count","orders by month"],"workspaces":["sales"],"definition":"COUNT of orders; no status filter unless requested.","unit":"orders","date":"orders.ordered_at","filters":[],"grain":"one order","columns":{"orders":["order_id","ordered_at","status"]}},
+    {"id":"gross_order_value","name":"Gross order value","aliases":["gross order value","gross sales","before discounts"],"workspaces":["sales"],"definition":"SUM(quantity * unit_price_cents) before discounts. Include all statuses unless specified.","unit":"INR","date":"orders.ordered_at","filters":[],"grain":"order item aggregated to order","columns":{"orders":["order_id","status","ordered_at","currency"],"order_items":["order_id","quantity","unit_price_cents"]}},
+    {"id":"discounted_order_value","name":"Discounted order value","aliases":["discounted order value","after discounts","discount total","applied discounts"],"workspaces":["sales"],"definition":"Gross order value minus actual applied discounts, aggregating both independently by order.","unit":"INR","date":"orders.ordered_at","filters":[],"grain":"one order","columns":{"orders":["order_id","status","currency"],"order_items":["order_id","quantity","unit_price_cents"],"order_discounts":["order_id","amount_cents"]}},
+    {"id":"captured_payments","name":"Captured payments","aliases":["captured payments","successful payments","succeeded payments","payment totals","collected payments"],"workspaces":["payments"],"definition":"SUM(payments.amount_cents) where status=succeeded. Failed/pending attempts do not count. Captured cash is before refunds.","unit":"INR","date":"payments.paid_at","filters":["payments.status = succeeded"],"grain":"payment","columns":{"payments":["payment_id","order_id","amount_cents","paid_at","status"],"orders":["order_id","currency"]}},
+    {"id":"successful_refunds","name":"Successful refunds","aliases":["successful refunds","succeeded refunds","refunded cash","refund total"],"workspaces":["payments"],"definition":"SUM(refunds.amount_cents) only where status=succeeded. Pending refunds do not reduce cash.","unit":"INR","date":"refunds.refunded_at","filters":["refunds.status = succeeded"],"grain":"refund","columns":{"refunds":["refund_id","payment_id","amount_cents","refunded_at","status"]}},
+    {"id":"net_collected_cash","name":"Net collected cash","aliases":["net collected cash","net cash","payments minus refunds","succeeded payments minus succeeded refunds"],"workspaces":["payments"],"definition":"Successful captured payments minus successful refunds. Aggregate cash streams separately. For monthly cash, use payment date and refund date respectively, not order date.","unit":"INR","date":"payments.paid_at and refunds.refunded_at","filters":["payments.status = succeeded","refunds.status = succeeded"],"grain":"independent cash events","columns":{"payments":["payment_id","order_id","amount_cents","paid_at","status"],"refunds":["payment_id","amount_cents","refunded_at","status"],"orders":["order_id","currency"]}},
+    {"id":"outstanding_balance","name":"Outstanding order balance","aliases":["outstanding balance","outstanding balances","unpaid orders","amount owed"],"workspaces":["sales","payments"],"definition":"Gross order amount minus applied discounts minus succeeded payments, independently aggregated by order. Exclude cancelled orders. Do not add refunded cash back as debt.","unit":"INR","date":"orders.ordered_at","filters":["orders.status <> cancelled","payments.status = succeeded"],"grain":"order","columns":{"orders":["order_id","customer_id","status","currency"],"order_items":["order_id","quantity","unit_price_cents"],"order_discounts":["order_id","amount_cents"],"payments":["order_id","amount_cents","status"]}},
+    {"id":"stock_on_hand","name":"Stock on hand","aliases":["stock on hand","stock level","stock levels","current inventory","low stock","zero stock"],"workspaces":["inventory"],"definition":"Current inventory.quantity by product and warehouse. Do not add movement totals to this snapshot. Ask for a low-stock threshold if none is specified.","unit":"units","date":"current snapshot","filters":[],"grain":"warehouse/product","columns":{"inventory":["warehouse_id","product_id","quantity"],"products":["product_id","name"],"warehouses":["warehouse_id","name"]}},
+    {"id":"inbound_outstanding","name":"Outstanding inbound units","aliases":["inbound outstanding","outstanding inbound","purchase receipts","partially received","awaiting receipt"],"workspaces":["inventory"],"definition":"Ordered purchase quantity minus purchase_receipt movements, grouped by purchase order and product. Exclude cancelled purchases.","unit":"units","date":"purchase_orders.ordered_at / inventory_movements.occurred_at","filters":["purchase_orders.status <> cancelled","inventory_movements.movement_type = purchase_receipt"],"grain":"purchase order/product","columns":{"purchase_orders":["purchase_order_id","status"],"purchase_order_items":["purchase_order_id","product_id","ordered_quantity"],"inventory_movements":["purchase_order_id","product_id","movement_type","quantity_change"]}}
+  ],
+  "relationship_rules": [
+    "Entity joins use declared primary/foreign keys; shared names or region alone do not establish identity.",
+    "customers.customer_id = orders.customer_id; orders.order_id = payments.order_id; payments.payment_id = refunds.payment_id.",
+    "orders.order_id = order_items.order_id; products.product_id = order_items.product_id.",
+    "returns links to an order_items row using both order_id and product_id; use both columns.",
+    "purchase_order_items and receipt movements join using both purchase_order_id and product_id.",
+    "inventory and inventory_movements join using both warehouse_id and product_id, after aggregating movements.",
+    "A NULL refunds.return_id can mean a cancellation refund. A NULL order_discounts.promotion_id means a manual discount."
+  ]
+}
