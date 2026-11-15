@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+sources.json
+domains.json
+encryption.json
+model_policy.json
+row_security.json
+.secrets/
+*.pii-backup.enc
+outputs/
+data/
+*.egg-info/
+build/
+dist/
