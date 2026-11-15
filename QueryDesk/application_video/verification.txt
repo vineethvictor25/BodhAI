@@ -1,7 +1,0 @@
-Duration: 00:03:52.96, start: 0.000000, bitrate: 251 kb/s
-Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(progressive), 1920x1080, 125 kb/s, 24 fps, 24 tbr, 12288 tbn, start 0.021322 (default)
-Stream #0:1[0x2](und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 120 kb/s (default)
-Full audio/video decode: passed
-Local demo services: stopped
-Demo reference: 10 rows / 22 non-cancelled orders
-No live model or warehouse inference was used.
