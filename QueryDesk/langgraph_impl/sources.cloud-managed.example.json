@@ -1,0 +1,12 @@
+[
+  {
+    "id": "aws_rds_postgres", "name": "AWS RDS / Aurora PostgreSQL", "kind": "postgresql",
+    "connection_env": "AWS_RDS_POSTGRES_URL", "schema": "public",
+    "allowed_tables": ["customers", "orders"], "timeout_seconds": 15
+  },
+  {
+    "id": "gcp_cloudsql_postgres", "name": "GCP Cloud SQL PostgreSQL", "kind": "postgresql",
+    "connection_env": "GCP_CLOUDSQL_POSTGRES_URL", "schema": "public",
+    "allowed_tables": ["customers", "orders"], "timeout_seconds": 15
+  }
+]
