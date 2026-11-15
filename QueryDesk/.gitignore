@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+.env
+data/
+.venv/
+*.egg-info/
+build/
+dist/
+
+# Generated videos and local secrets must never be published.
+*.mp4
+*.mov
+*.webm
+*.avi
+*.mkv
+*.log
+*.pem
+*.key
+.secrets/
+.env.*
+!.env.example
+!.env.warehouses.example
