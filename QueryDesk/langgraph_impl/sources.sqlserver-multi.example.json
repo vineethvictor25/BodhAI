@@ -1,0 +1,20 @@
+[
+  {
+    "id": "sqlserver_sales_crm",
+    "name": "Sales and CRM on one SQL Server instance",
+    "kind": "mssql",
+    "connection_env": "SQLSERVER_CROSSDB_URL",
+    "schema": "dbo",
+    "allowed_tables": ["crm_customers", "sales_orders"],
+    "table_mappings": {
+      "crm_customers": {"database": "DatabaseA", "schema": "dbo", "table": "Customers"},
+      "sales_orders": {"database": "DatabaseB", "schema": "dbo", "table": "Orders"}
+    },
+    "relationships": [
+      {"from_table": "sales_orders", "to_table": "crm_customers", "columns": {"CustomerID": "CustomerID"}}
+    ],
+    "knowledge_directory": "knowledge_sqlserver_multi_example",
+    "row_limit": 100,
+    "timeout_seconds": 15
+  }
+]
