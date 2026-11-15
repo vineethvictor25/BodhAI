@@ -1,0 +1,22 @@
+[
+  {
+    "id": "sqlserver_reporting", "name": "SQL Server / Azure SQL", "kind": "mssql",
+    "connection_env": "SQLSERVER_URL", "schema": "dbo", "allowed_tables": ["customers", "orders"], "timeout_seconds": 15
+  },
+  {
+    "id": "oracle_reporting", "name": "Oracle reporting", "kind": "oracle",
+    "connection_env": "ORACLE_URL", "schema": "REPORTING", "allowed_tables": ["CUSTOMERS", "ORDERS"], "timeout_seconds": 15
+  },
+  {
+    "id": "snowflake_analytics", "name": "Snowflake analytics", "kind": "snowflake",
+    "connection_env": "SNOWFLAKE_URL", "schema": "ANALYTICS", "allowed_tables": ["CUSTOMERS", "ORDERS"], "timeout_seconds": 30
+  },
+  {
+    "id": "aws_redshift", "name": "Amazon Redshift", "kind": "redshift",
+    "connection_env": "REDSHIFT_URL", "schema": "analytics", "allowed_tables": ["customers", "orders"], "timeout_seconds": 30
+  },
+  {
+    "id": "gcp_bigquery", "name": "Google BigQuery", "kind": "bigquery",
+    "connection_env": "BIGQUERY_URL", "schema": "analytics", "allowed_tables": ["customers", "orders"], "timeout_seconds": 30
+  }
+]
