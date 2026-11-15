@@ -1,0 +1,7 @@
+# Optional bundle. Per-engine files allow operators to install only what they need.
+-r requirements-sources.txt
+-r requirements-mssql.txt
+-r requirements-oracle.txt
+-r requirements-snowflake.txt
+-r requirements-redshift.txt
+-r requirements-bigquery.txt
