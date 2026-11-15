@@ -1,3 +1,0 @@
-# Authoring tools only; separate from application runtime dependencies.
-Pillow==13.0.0
-imageio-ffmpeg==0.8.1
