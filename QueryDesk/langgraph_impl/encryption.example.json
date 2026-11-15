@@ -1,0 +1,10 @@
+{
+  "provider": "aes-gcm",
+  "key_file": ".secrets/pii.key",
+  "sources": {
+    "sample": {
+      "customers": ["name", "phone", "mobile", "email"],
+      "customer_profiles": ["email"]
+    }
+  }
+}
