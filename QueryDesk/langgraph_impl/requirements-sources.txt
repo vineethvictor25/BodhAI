@@ -1,0 +1,5 @@
+# Optional server-side connectors; browser users install nothing.
+SQLAlchemy>=2.0,<2.1
+sqlglot>=26,<30
+psycopg[binary]>=3.2,<4
+PyMySQL>=1.1,<2
