@@ -1,0 +1,17 @@
+[
+  {
+    "id": "postgres_analytics",
+    "name": "PostgreSQL analytics",
+    "kind": "postgresql",
+    "connection_env": "ANALYTICS_POSTGRES_URL",
+    "schema": "public",
+    "allowed_tables": ["customers", "orders", "order_items"]
+  },
+  {
+    "id": "mysql_reporting",
+    "name": "MySQL reporting",
+    "kind": "mysql",
+    "connection_env": "REPORTING_MYSQL_URL",
+    "allowed_tables": ["customers", "orders", "order_items"]
+  }
+]
