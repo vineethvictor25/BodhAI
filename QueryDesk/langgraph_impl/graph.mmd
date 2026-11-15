@@ -1,0 +1,40 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	orchestrator(orchestrator)
+	intent(intent)
+	workspace(workspace)
+	schema(schema)
+	columns(columns)
+	sql(sql)
+	validation(validation)
+	execution(execution)
+	response(response)
+	finalize(finalize)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> orchestrator;
+	columns --> orchestrator;
+	execution --> orchestrator;
+	intent --> orchestrator;
+	orchestrator -.-> columns;
+	orchestrator -.-> execution;
+	orchestrator -.-> finalize;
+	orchestrator -.-> intent;
+	orchestrator -.-> response;
+	orchestrator -.-> schema;
+	orchestrator -.-> sql;
+	orchestrator -.-> validation;
+	orchestrator -.-> workspace;
+	response --> orchestrator;
+	schema --> orchestrator;
+	sql --> orchestrator;
+	validation --> orchestrator;
+	workspace --> orchestrator;
+	finalize --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
