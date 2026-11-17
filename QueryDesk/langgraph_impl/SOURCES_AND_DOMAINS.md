@@ -103,3 +103,8 @@ Built-in/source-file domains form the initial catalog. Saved UI definitions over
 | `POST /api/sources/{id}/domains/suggest` | Generate metadata-based drafts without saving them |
 
 `POST /api/queries` accepts a source ID and uses its existing `workspace` field as the UI domain hint. It never accepts connection strings, credentials, SQL or arbitrary database paths. Authentication and inherited domain/PII grants are enforced; hints can expand only within the user's assigned domain union. See `SECURITY.md`. Scripts still run locally rather than deploying a public service.
+
+
+## Business-owned domain knowledge
+
+A domain/table configuration is a relevance/access foundation; business definitions are maintained separately in **Domain knowledge**. Administrators assign maintenance roles without adding data grants. See [the role-specific authoring guide](DOMAIN_KNOWLEDGE.md#quick-start-by-role) and [current architecture](ARCHITECTURE.md) for the publication and generation paths.
