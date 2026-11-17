@@ -23,4 +23,4 @@ package-dir = {langgraph_impl = "."}
 dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools.package-data]
-langgraph_impl = ["*.sql", "knowledge/*.json", "knowledge_sqlserver_multi_example/*.json", ".env.example", "graph.mmd", "sources*.example.json", "domains.example.json", "encryption.example.json", "model_policy.example.json", "row_security.example.json"]
+langgraph_impl = ["*.sql", "knowledge/*.json", "knowledge_sqlserver_multi_example/*.json", ".env.example", "graph.mmd", "sources*.example.json", "domains.example.json", "knowledge.entry.example.json", "encryption.example.json", "model_policy.example.json", "row_security.example.json"]
