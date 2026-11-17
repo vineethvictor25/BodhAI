@@ -10,6 +10,8 @@ Delivery order: shared storage contracts → PostgreSQL control store → multip
 
 ## Delivered enhancements
 
+Implemented: [business-owned domain knowledge](DOMAIN_KNOWLEDGE.md), with separate maintenance assignments, validated JSON import, optional metadata-only AI drafts, immutable revisions, reviewer publication, rollback/retirement, permission-filtered generation context and atomic approval invalidation. Metadata validation is not automated business-result verification; graph/vector storage and feedback learning remain deferred.
+
 Implemented: [synthetic analytics lab](ANALYTICS_LAB.md) with 20 tables, 399,408 rows, a combined local source, separate related SQLite databases, SQL Server seed/mapping artifacts and 12 verified reference queries. Native SQL Server deployment remains an operator step; predictive fixtures do not add model training or federation.
 
 Implemented: [optional result visualizations](VISUALIZATIONS.md), with a Visualization Agent selecting chart/axes and Plotly, Matplotlib or Seaborn from installed allowed adapters. Interactive and static charts remain in the browser. Unsuitable results get editable query-improvement suggestions with fresh table/SQL approvals. Other chart libraries require future adapters.
