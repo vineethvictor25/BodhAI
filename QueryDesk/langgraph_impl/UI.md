@@ -1,5 +1,9 @@
 # QueryDesk UI
 
+The [current architecture diagram](ARCHITECTURE.md) documents the deployed request flow. Follow the [role-specific knowledge guide](DOMAIN_KNOWLEDGE.md#quick-start-by-role) to assign owners, create drafts and publish reviewed definitions.
+
+Open **Domain knowledge** to maintain business definitions through a draft/review/publish lifecycle. Administrators assign owners and reviewers separately from data permissions. See [Domain knowledge](DOMAIN_KNOWLEDGE.md).
+
 For larger analytical queries, select **Analytics lab · local combined mirror** after generating/registering the [analytics lab](ANALYTICS_LAB.md) and restarting the API. The guide provides trend, KPI, cross-domain and predictive-analysis questions plus native SQL Server setup instructions.
 
 If setup, sign-in, a query or a connection fails, see the [troubleshooting guide](TROUBLESHOOTING.md).
