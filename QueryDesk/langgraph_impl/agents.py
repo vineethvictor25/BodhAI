@@ -80,6 +80,8 @@ class SchemaAgent(Specialist):
         if routing is not None:
             catalog["tables"] = sorted(set(catalog["tables"]) & set(routing["tables"]))
             catalog["domain_hint"]={key:routing.get(key) for key in ("preferred_tables","domain_hints","domain_descriptions")}
+        if routing is not None:
+            catalog["business_context"]=routing.get("business_context",{})
         available = self.database.schema(catalog["tables"]) if catalog["tables"] else {"tables": []}
         catalog["metadata"] = [{"table": t["table"], "columns": [c["name"] for c in t["columns"]],
                                 "foreign_keys": t["foreign_keys"],
