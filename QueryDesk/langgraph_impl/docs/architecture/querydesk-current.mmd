@@ -1,0 +1,47 @@
+flowchart TB
+    UI["Browser interface: React / TypeScript"] --> WEB["Node.js frontend and API proxy"]
+    WEB --> API["FastAPI: authentication, CSRF and input validation"]
+    API --> JOB["Query jobs: ownership, queue, idempotency and cancellation"]
+    JOB --> ORCH["LangGraph orchestrator: stages, budgets and review pauses"]
+    ORCH --> INTENT["Intent Agent"]
+    INTENT --> SCHEMA["Domain routing and Schema Agent"]
+    SCHEMA --> TABLES["User confirms permitted tables"]
+    TABLES --> CONTEXT["Published context and approved example retrieval"]
+    CONTEXT --> COLUMNS["Column Pruning Agent"]
+    COLUMNS --> SQL["SQL Agent: source-dialect read-only statement"]
+    SQL --> VALIDATE["Validation Agent: protected planning and model review"]
+    VALIDATE --> APPROVE["User approves final SQL"]
+    APPROVE --> EXECUTE["Execution Agent: approval and access checks"]
+    EXECUTE --> RESPONSE["Response Agent"]
+    RESPONSE --> RESULT["Browser: answer, explanation, SQL and result table"]
+    RESULT -. "User requests visualization" .-> VIS["Visualization Agent: typed chart plan"]
+    VIS --> CHART["Plotly, Matplotlib or Seaborn chart in browser"]
+    VALIDATE -. "Generated SQL fails: bounded retry" .-> SCHEMA
+    APPROVE -. "User edits SQL: revalidate" .-> VALIDATE
+    EXECUTE --> DB["Protected adapters and connected databases / warehouses"]
+    DB --> EXECUTE
+    DB -. "Live permitted metadata" .-> SCHEMA
+
+    subgraph KNOWLEDGE["Separate domain knowledge lifecycle"]
+        ADMIN["Administrator grants data access and assigns knowledge roles"] --> OWNER["Owner / contributor builds a draft"]
+        OWNER --> METHODS["Forms, validated JSON import or metadata-only AI drafts"]
+        METHODS --> CHECK["Validate mapped objects; plan example SQL without executing"]
+        CHECK --> SUBMIT["Submit immutable revision for review"]
+        SUBMIT --> REVIEW["Reviewer confirms business meaning and records evidence"]
+        REVIEW --> PUBLISHED["Activate published version; invalidate old approvals"]
+    end
+    API -. "Knowledge workspace actions" .-> ADMIN
+    PUBLISHED --> FILTER["Recheck current request's domain, table and column permissions"]
+    BUILTIN["Built-in source catalogs and approved SQL examples"] --> FILTER
+    FILTER --> INTENT
+    FILTER --> SCHEMA
+    FILTER --> CONTEXT
+    STATE["SQLite application records: accounts, sessions, jobs, feedback and knowledge versions"] -. "Safe lifecycle persistence" .-> JOB
+    STATE -. "Versioned knowledge" .-> PUBLISHED
+    POLICY["Application policy: row and PII restrictions, limits, revocation and approved providers"] -. "Enforced independently of the LLM" .-> API
+    POLICY -. "Protected execution" .-> EXECUTE
+
+    classDef approval fill:#edf8f4,stroke:#16846d,color:#153452
+    classDef current fill:#ffffff,stroke:#2768a7,color:#153452
+    class TABLES,APPROVE,REVIEW,PUBLISHED approval
+    class UI,WEB,API,JOB,ORCH,INTENT,SCHEMA,CONTEXT,COLUMNS,SQL,VALIDATE,EXECUTE,RESPONSE,RESULT,VIS,CHART,DB,STATE,POLICY,FILTER,BUILTIN current
