@@ -81,12 +81,12 @@ class KnowledgeBase:
             raise ValueError("Selected workspaces have no tables within application permissions")
         return {"workspaces": selected, "tables": sorted(allowed if soft else scope),"preferred_tables":sorted(scope),
             "domain_hints":soft,"domain_descriptions":[{"id":name,"description":spaces[name]["description"]} for name in selected],
-            "reason": reason, "explicit": bool(requested)}
+            "reason": reason, "explicit": bool(requested), "business_context":self.context(question,allowed)}
 
     def context(self, question, tables=None):
         lower = question.lower()
         metrics = [metric for metric in self.catalog["metrics"]
-                   if any(alias in lower for alias in metric["aliases"])]
+                   if any(alias.lower() in lower for alias in metric["aliases"])]
         if tables is not None:
             permitted = set(tables)
             metrics = [metric for metric in metrics if set(metric["columns"]) <= permitted]
@@ -97,9 +97,26 @@ class KnowledgeBase:
                 "domains":[{"name":space.get("name",name),"description":space["description"]} for name,space in self.catalog["workspaces"].items()
                     if tables is None or set(space["tables"]) & set(tables)],
                 "relationship_rules": rules,
-                "ambiguities": self.catalog["ambiguous_terms"]}
+                "ambiguities": self.catalog["ambiguous_terms"],
+                "domain_knowledge":[item for item in self.catalog.get("domain_knowledge",[])
+                    if (tables is None or set(item["columns"])<=set(tables)) and
+                    (item["kind"] in {"rule","relationship"} or any(alias.lower() in lower for alias in item["aliases"]+[item["title"]]))],
+                "knowledge_versions":[item for item in self.catalog.get("knowledge_versions",[])
+                    if tables is None or set(item["columns"])<=set(tables)]}
 
     def clarification(self, question):
+        # An alias shared by independently published metrics is a decision, not a guess.
+        matches={}
+        for metric in self.catalog["metrics"]:
+            for alias in set(a.lower() for a in metric["aliases"]):
+                if re.search(r"\b"+re.escape(alias)+r"\b",question,re.I):
+                    matches.setdefault(alias,[]).append(metric)
+        for metrics in matches.values():
+            unique={m["id"]:m for m in metrics}
+            if len(unique)>1 and any(key.startswith("domain:") for key in unique):
+                named=[m for m in unique.values() if m["name"].lower() in question.lower()]
+                if len(named)!=1:
+                    return "Which business definition do you mean: "+"; ".join(m["name"] for m in list(unique.values())[:5])+"? Use the intended definition's full name."
         for term, message in self.catalog["ambiguous_terms"].items():
             if re.search(r"\b"+re.escape(term)+r"\b",question,re.I):
                 if term == "profit" or not self.context(question)["metrics"]:
