@@ -1,0 +1,12 @@
+{
+  "kind": "metric",
+  "title": "Eligible order count",
+  "description": "Count one order once, excluding cancelled orders. This is a synthetic template; the business owner must confirm the actual eligibility rules.",
+  "aliases": ["eligible orders"],
+  "columns": {"orders": ["order_id", "ordered_at", "status"]},
+  "unit": "orders",
+  "date_basis": "orders.ordered_at",
+  "grain": "one order",
+  "filters": ["Exclude cancelled orders"],
+  "questions": ["How many eligible orders were placed during the reporting month?"]
+}
