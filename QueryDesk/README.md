@@ -4,11 +4,19 @@ There is one implementation: [langgraph_impl](langgraph_impl/README.md).
 
 It contains the agents, graph orchestration, provider integration, SQLite database, configuration, virtual environment and tests.
 
+## Current architecture
+
+![Current QueryDesk architecture and request flow](langgraph_impl/docs/architecture/querydesk-current.png)
+
+[Architecture guide](langgraph_impl/ARCHITECTURE.md) · [Scalable SVG](langgraph_impl/docs/architecture/querydesk-current.svg) · [Create domain knowledge](langgraph_impl/DOMAIN_KNOWLEDGE.md#quick-start-by-role)
+
 ## Documentation
 
 | Guide | Contents |
 | --- | --- |
 | [Application overview](langgraph_impl/README.md) | Architecture, configuration and CLI |
+| [Current architecture and request flow](langgraph_impl/ARCHITECTURE.md) | Agents, approvals, services and knowledge publication |
+| [Domain knowledge authoring](langgraph_impl/DOMAIN_KNOWLEDGE.md) | Role-specific setup, drafting, review, publication and troubleshooting |
 | [Synthetic analytics lab](langgraph_impl/ANALYTICS_LAB.md) | 20 tables, 399,408 rows, related databases, trends, KPIs and predictive fixtures |
 | [Pros, cons and suitable use cases](langgraph_impl/PROS_AND_CONS.md) | Strengths, trade-offs, current limits and priorities |
 | [Hardening implementation plan](langgraph_impl/HARDENING_PLAN.md) | Eight issues, dependencies, migrations and acceptance gates |
