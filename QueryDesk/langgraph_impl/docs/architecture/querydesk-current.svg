@@ -1,0 +1,214 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2600" height="2330" viewBox="0 0 2600 2330" role="img" aria-label="Current QueryDesk architecture and request flow">
+<rect width="2600" height="2330" fill="#f5f7fb"/>
+<rect x="80" y="60" width="66" height="66" rx="17" fill="#2768a7" stroke="#2768a7" stroke-width="2"/>
+<text x="97" y="67" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="46" font-weight="700" fill="#fff">Q</text>
+<text x="170" y="57" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="60" font-weight="700" fill="#153452">QueryDesk</text>
+<text x="80" y="152" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#5b6d80">CURRENT ARCHITECTURE  /  ENGLISH QUESTION TO GOVERNED DATABASE ANSWER</text>
+<text x="1825" y="75" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700" fill="#2768a7">Existing implementation only</text>
+<text x="1825" y="116" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400" fill="#5b6d80">Includes published domain knowledge and existing guardrails</text>
+<polyline points="600,345 720,345" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="720.00,345.00 707.71,351.71 707.71,338.29" fill="#2768a7"/>
+<polyline points="1240,345 1360,345" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="1360.00,345.00 1347.71,351.71 1347.71,338.29" fill="#2768a7"/>
+<polyline points="1880,345 2000,345" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="2000.00,345.00 1987.71,351.71 1987.71,338.29" fill="#2768a7"/>
+<rect x="80" y="270" width="520" height="145" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="104" y="292" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Browser interface</text>
+<text x="104" y="346" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">React / TypeScript</text>
+<text x="104" y="381" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">English question, source and domain</text>
+<rect x="720" y="270" width="520" height="145" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="744" y="292" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Node.js frontend server</text>
+<text x="744" y="346" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Serves the built UI and proxies API calls</text>
+<text x="744" y="381" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Same-origin browser requests</text>
+<rect x="1360" y="270" width="520" height="145" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="1384" y="292" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">FastAPI + access controls</text>
+<text x="1384" y="346" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Authentication, CSRF and input validation</text>
+<text x="1384" y="381" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Source, domain, table, row and PII scope</text>
+<rect x="2000" y="270" width="520" height="145" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="2024" y="292" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Query job manager</text>
+<text x="2024" y="346" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400" fill="#5b6d80">Bounded queue, ownership and idempotency</text>
+<text x="2024" y="381" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Progress, cancellation and review recovery</text>
+<rect x="55" y="455" width="2490" height="735" rx="26" fill="#edf2f8" stroke="#d7e0eb" stroke-width="2"/>
+<rect x="80" y="480" width="2440" height="88" rx="16" fill="#153452" stroke="#153452" stroke-width="2"/>
+<text x="110" y="497" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="32" font-weight="700" fill="#fff">LANGGRAPH ORCHESTRATOR</text>
+<text x="755" y="503" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="400" fill="#dfeaf5">Controls stage transitions, bounded retries, model-call budgets and review pauses</text>
+<polyline points="2260,415 2260,480" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="2260.00,480.00 2253.29,467.71 2266.71,467.71" fill="#2768a7"/>
+<polyline points="280,568 280,660" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="280.00,660.00 273.29,647.71 286.71,647.71" fill="#2768a7"/>
+<polyline points="480,744 590,744" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="590.00,744.00 577.71,750.71 577.71,737.29" fill="#2768a7"/>
+<polyline points="990,744 1100,744" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="1100.00,744.00 1087.71,750.71 1087.71,737.29" fill="#2768a7"/>
+<polyline points="1500,744 1610,744" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="1610.00,744.00 1597.71,750.71 1597.71,737.29" fill="#2768a7"/>
+<polyline points="2010,744 2120,744" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="2120.00,744.00 2107.71,750.71 2107.71,737.29" fill="#2768a7"/>
+<polyline points="2320,828 2320,975" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="2320.00,975.00 2313.29,962.71 2326.71,962.71" fill="#2768a7"/>
+<polyline points="590,1059 480,1059" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="480.00,1059.00 492.29,1052.29 492.29,1065.71" fill="#2768a7"/>
+<polyline points="1100,1059 990,1059" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="990.00,1059.00 1002.29,1052.29 1002.29,1065.71" fill="#2768a7"/>
+<polyline points="1610,1059 1500,1059" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="1500.00,1059.00 1512.29,1052.29 1512.29,1065.71" fill="#2768a7"/>
+<polyline points="2120,1059 2010,1059" fill="none" stroke="#2768a7" stroke-width="4"/>
+<polygon points="2010.00,1059.00 2022.29,1052.29 2022.29,1065.71" fill="#2768a7"/>
+<polyline points="2520,1059 2570,1059 2570,611 790,611 790,660" fill="none" stroke="#a6632b" stroke-width="3" stroke-dasharray="13 9"/>
+<polygon points="790.00,660.00 783.29,647.71 796.71,647.71" fill="#a6632b"/>
+<rect x="1060" y="585" width="835" height="45" rx="8" fill="#edf2f8" stroke="#edf2f8" stroke-width="2"/>
+<text x="1080" y="592" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#a6632b">Failed generated SQL: bounded schema / generation retry</text>
+<polyline points="1810,975 1810,902 2320,902 2320,975" fill="none" stroke="#16846d" stroke-width="3" stroke-dasharray="13 9"/>
+<polygon points="2320.00,975.00 2313.29,962.71 2326.71,962.71" fill="#16846d"/>
+<text x="1843" y="862" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#16846d">User SQL edits return to validation</text>
+<rect x="80" y="660" width="400" height="168" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<rect x="100" y="680" width="44" height="36" rx="9" fill="#2768a7" stroke="#2768a7" stroke-width="2"/>
+<text x="107" y="683" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">01</text>
+<text x="158" y="682" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Intent Agent</text>
+<text x="104" y="736" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Interpret the question</text>
+<text x="104" y="771" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Clarify or refuse when needed</text>
+<rect x="590" y="660" width="400" height="168" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<rect x="610" y="680" width="44" height="36" rx="9" fill="#2768a7" stroke="#2768a7" stroke-width="2"/>
+<text x="617" y="683" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">02</text>
+<text x="668" y="682" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="700" fill="#2768a7">Routing + Schema Agent</text>
+<text x="614" y="736" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400" fill="#5b6d80">Domain hints and permitted tables</text>
+<text x="614" y="771" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Retrieve live schema and joins</text>
+<rect x="1100" y="660" width="400" height="168" rx="18" fill="#edf8f4" stroke="#16846d" stroke-width="2"/>
+<rect x="1120" y="680" width="44" height="36" rx="9" fill="#16846d" stroke="#16846d" stroke-width="2"/>
+<text x="1127" y="683" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">03</text>
+<text x="1178" y="682" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#16846d">Confirm tables</text>
+<text x="1124" y="736" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">User selects permitted tables</text>
+<text x="1124" y="771" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">No business-data reads yet</text>
+<rect x="1610" y="660" width="400" height="168" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<rect x="1630" y="680" width="44" height="36" rx="9" fill="#2768a7" stroke="#2768a7" stroke-width="2"/>
+<text x="1637" y="683" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">04</text>
+<text x="1688" y="682" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="700" fill="#2768a7">Column Pruning Agent</text>
+<text x="1634" y="736" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400" fill="#5b6d80">Retrieve definitions / SQL examples</text>
+<text x="1634" y="771" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Retain needed columns and keys</text>
+<rect x="2120" y="660" width="400" height="168" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<rect x="2140" y="680" width="44" height="36" rx="9" fill="#2768a7" stroke="#2768a7" stroke-width="2"/>
+<text x="2147" y="683" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">05</text>
+<text x="2198" y="682" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">SQL Agent</text>
+<text x="2144" y="736" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Generate dialect-specific SQL</text>
+<text x="2144" y="771" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400" fill="#5b6d80">One read-only query + parameters</text>
+<rect x="2120" y="975" width="400" height="168" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<rect x="2140" y="995" width="44" height="36" rx="9" fill="#2768a7" stroke="#2768a7" stroke-width="2"/>
+<text x="2147" y="998" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">06</text>
+<text x="2198" y="997" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Validation Agent</text>
+<text x="2144" y="1051" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Application planning checks</text>
+<text x="2144" y="1086" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Model review of query semantics</text>
+<rect x="1610" y="975" width="400" height="168" rx="18" fill="#edf8f4" stroke="#16846d" stroke-width="2"/>
+<rect x="1630" y="995" width="44" height="36" rx="9" fill="#16846d" stroke="#16846d" stroke-width="2"/>
+<text x="1637" y="998" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">07</text>
+<text x="1688" y="997" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#16846d">Approve final SQL</text>
+<text x="1634" y="1051" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400" fill="#5b6d80">User reviews SQL and access scope</text>
+<text x="1634" y="1086" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400" fill="#5b6d80">Fingerprint, expiry and edit controls</text>
+<rect x="1100" y="975" width="400" height="168" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<rect x="1120" y="995" width="44" height="36" rx="9" fill="#2768a7" stroke="#2768a7" stroke-width="2"/>
+<text x="1127" y="998" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">08</text>
+<text x="1178" y="997" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Execution Agent</text>
+<text x="1124" y="1051" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Consume current approval</text>
+<text x="1124" y="1086" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Run through protected adapters</text>
+<rect x="590" y="975" width="400" height="168" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<rect x="610" y="995" width="44" height="36" rx="9" fill="#2768a7" stroke="#2768a7" stroke-width="2"/>
+<text x="617" y="998" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">09</text>
+<text x="668" y="997" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Response Agent</text>
+<text x="614" y="1051" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Explain the executed results</text>
+<text x="614" y="1086" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">State units, filters and limitations</text>
+<rect x="80" y="975" width="400" height="168" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<rect x="100" y="995" width="44" height="36" rx="9" fill="#2768a7" stroke="#2768a7" stroke-width="2"/>
+<text x="107" y="998" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">10</text>
+<text x="158" y="997" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Browser results</text>
+<text x="104" y="1051" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400" fill="#5b6d80">Answer + data-based explanation</text>
+<text x="104" y="1086" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">SQL, tables and tabular results</text>
+<text x="350" y="1157" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400" fill="#5b6d80">Arrows show request-stage order. Each agent stage returns control to the orchestrator.</text>
+<polyline points="280,1143 280,1330" fill="none" stroke="#a6632b" stroke-width="3" stroke-dasharray="13 9"/>
+<polygon points="280.00,1330.00 273.29,1317.71 286.71,1317.71" fill="#a6632b"/>
+<text x="330" y="1245" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#a6632b">WHEN THE USER CHOOSES “VISUALIZE”</text>
+<rect x="80" y="1330" width="400" height="170" rx="18" fill="#fff9f1" stroke="#a6632b" stroke-width="2"/>
+<rect x="100" y="1350" width="44" height="36" rx="9" fill="#a6632b" stroke="#a6632b" stroke-width="2"/>
+<text x="107" y="1353" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">11</text>
+<text x="158" y="1352" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#a6632b">Visualization Agent</text>
+<text x="104" y="1406" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400" fill="#5b6d80">Recommend chart, axes and library</text>
+<text x="104" y="1441" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Typed plan; column profiles only</text>
+<polyline points="480,1415 590,1415" fill="none" stroke="#a6632b" stroke-width="4"/>
+<polygon points="590.00,1415.00 577.71,1421.71 577.71,1408.29" fill="#a6632b"/>
+<rect x="590" y="1330" width="400" height="170" rx="18" fill="#fff9f1" stroke="#a6632b" stroke-width="2"/>
+<rect x="610" y="1350" width="44" height="36" rx="9" fill="#a6632b" stroke="#a6632b" stroke-width="2"/>
+<text x="617" y="1353" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#fff">12</text>
+<text x="668" y="1352" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#a6632b">Chart in the browser</text>
+<text x="614" y="1406" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Plotly interactive charts</text>
+<text x="614" y="1441" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400" fill="#5b6d80">Matplotlib / Seaborn static charts</text>
+<rect x="80" y="1550" width="910" height="195" rx="18" fill="#fff" stroke="#d7e0eb" stroke-width="2"/>
+<text x="108" y="1571" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#153452">Human control stays in the request flow</text>
+<text x="108" y="1622" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Approval pauses release workflow workers; models cannot approve SQL.</text>
+<text x="108" y="1661" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Clarification, refusal, cancellation or limits return a status to the user.</text>
+<text x="108" y="1700" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Visualization uses authorized results and does not execute new SQL.</text>
+<text x="1100" y="1237" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700" fill="#153452">SHARED SERVICES AND ENFORCED BOUNDARIES</text>
+<rect x="1100" y="1290" width="680" height="180" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="1124" y="1312" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Business knowledge</text>
+<text x="1124" y="1366" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Built-in JSON + published, versioned domain definitions</text>
+<text x="1124" y="1401" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Concepts, metrics, rules, relationships and SQL examples</text>
+<text x="1124" y="1436" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Lexical / BM25 retrieval; current-access mapping checks</text>
+<rect x="1840" y="1290" width="680" height="180" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="1864" y="1312" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Approved LLM providers</text>
+<text x="1864" y="1366" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Per-agent model configuration through .env</text>
+<text x="1864" y="1401" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">LangChain typed tool calls and local handoff validation</text>
+<text x="1864" y="1436" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Provider policy checks; credentials stay server-side</text>
+<rect x="1100" y="1530" width="680" height="225" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="1124" y="1552" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Connectors + databases / warehouses</text>
+<text x="1124" y="1606" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">SQLite, PostgreSQL, MySQL, SQL Server and Oracle</text>
+<text x="1124" y="1641" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Snowflake, Redshift and BigQuery</text>
+<text x="1124" y="1676" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Mapped SQL Server joins across one server instance</text>
+<text x="1124" y="1711" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Protected reads, PII/row scope and configured TLS</text>
+<rect x="1840" y="1530" width="680" height="225" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="1864" y="1552" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Application state + operations</text>
+<text x="1864" y="1606" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">SQLite accounts, sessions, query and knowledge records</text>
+<text x="1864" y="1641" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">History retention, feedback and safe review checkpoints</text>
+<text x="1864" y="1676" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Owner checks and access-policy revocation</text>
+<text x="1864" y="1711" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">Stage latency, provider usage and execution metrics</text>
+<polyline points="1300,1143 1300,1205 1040,1205 1040,1644 1100,1644" fill="none" stroke="#2768a7" stroke-width="3"/>
+<polygon points="1100.00,1644.00 1087.71,1650.71 1087.71,1637.29" fill="#2768a7"/>
+<text x="1068" y="1493" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="700" fill="#2768a7">Native SQL and scoped results</text>
+<text x="80" y="1810" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#153452">DOMAIN KNOWLEDGE AUTHORING  /  CONTROLLED PUBLICATION</text>
+<polyline points="480,1954 590,1954" fill="none" stroke="#16846d" stroke-width="4"/>
+<polygon points="590.00,1954.00 577.71,1960.71 577.71,1947.29" fill="#16846d"/>
+<polyline points="990,1954 1100,1954" fill="none" stroke="#16846d" stroke-width="4"/>
+<polygon points="1100.00,1954.00 1087.71,1960.71 1087.71,1947.29" fill="#16846d"/>
+<polyline points="1500,1954 1610,1954" fill="none" stroke="#16846d" stroke-width="4"/>
+<polygon points="1610.00,1954.00 1597.71,1960.71 1597.71,1947.29" fill="#16846d"/>
+<polyline points="2010,1954 2120,1954" fill="none" stroke="#16846d" stroke-width="4"/>
+<polygon points="2120.00,1954.00 2107.71,1960.71 2107.71,1947.29" fill="#16846d"/>
+<rect x="80" y="1870" width="400" height="180" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="104" y="1892" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Assign maintainers</text>
+<text x="104" y="1946" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400" fill="#5b6d80">Administrator assigns domain roles</text>
+<text x="104" y="1981" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Data access is separately granted</text>
+<rect x="590" y="1870" width="400" height="180" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="614" y="1892" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Build a draft</text>
+<text x="614" y="1946" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6d80">Owner / contributor supplies meaning</text>
+<text x="614" y="1981" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Forms, JSON or AI-assisted drafts</text>
+<rect x="1100" y="1870" width="400" height="180" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="1124" y="1892" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Validate and submit</text>
+<text x="1124" y="1946" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Current permitted metadata only</text>
+<text x="1124" y="1981" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="400" fill="#5b6d80">No execution of example SQL</text>
+<rect x="1610" y="1870" width="400" height="180" rx="18" fill="#edf8f4" stroke="#16846d" stroke-width="2"/>
+<text x="1634" y="1892" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#16846d">Review and publish</text>
+<text x="1634" y="1946" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6d80">Reviewer confirms business meaning</text>
+<text x="1634" y="1981" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Immutable revisions and rollback</text>
+<rect x="2120" y="1870" width="400" height="180" rx="18" fill="#fff" stroke="#2768a7" stroke-width="2"/>
+<text x="2144" y="1892" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700" fill="#2768a7">Published definitions</text>
+<text x="2144" y="1946" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400" fill="#5b6d80">Only the active published revision</text>
+<text x="2144" y="1981" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400" fill="#5b6d80">Recheck each user’s current scope</text>
+<polyline points="2520,1954 2570,1954 2570,1500 1805,1500 1805,1380 1780,1380" fill="none" stroke="#16846d" stroke-width="3" stroke-dasharray="13 9"/>
+<polygon points="1780.00,1380.00 1792.29,1373.29 1792.29,1386.71" fill="#16846d"/>
+<text x="1845" y="1476" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="700" fill="#16846d">Published context only</text>
+<text x="80" y="2090" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Drafts never enter generation context. Published knowledge supports intent, schema selection, column pruning, SQL and explanation.</text>
+<text x="80" y="2132" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Publishing, retirement or rollback invalidates old query approvals. Metadata validation does not prove business-result correctness.</text>
+<polyline points="80,2200 145,2200" fill="none" stroke="#2768a7" stroke-width="4"/>
+<text x="160" y="2185" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Request flow</text>
+<polyline points="440,2200 505,2200" fill="none" stroke="#a6632b" stroke-width="3" stroke-dasharray="13 9"/>
+<text x="520" y="2185" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Optional / retry path</text>
+<rect x="905" y="2185" width="35" height="29" rx="7" fill="#edf8f4" stroke="#16846d" stroke-width="2"/>
+<text x="957" y="2185" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#5b6d80">Human approval / published knowledge</text>
+<text x="80" y="2260" dominant-baseline="text-before-edge" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="400" fill="#153452">Security is enforced by application code and database grants. Models cannot approve SQL or change data permissions.</text>
+</svg>
