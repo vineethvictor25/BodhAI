@@ -1,5 +1,14 @@
 # Standalone LangChain and LangGraph NLQ to SQL
 
+See [Current architecture and request flow](ARCHITECTURE.md) for the implemented application and [Domain knowledge quick start](DOMAIN_KNOWLEDGE.md#quick-start-by-role) for administrator, owner and reviewer instructions.
+
+![Current QueryDesk architecture](docs/architecture/querydesk-current.png)
+
+[Scalable architecture SVG](docs/architecture/querydesk-current.svg)
+
+
+The [domain knowledge workspace](DOMAIN_KNOWLEDGE.md) lets assigned business owners build source/domain-specific concepts, metrics, relationships, rules and SQL examples. Drafts require review before publication; knowledge roles never grant data access.
+
 The [synthetic analytics lab](ANALYTICS_LAB.md) adds 399,408 rows across 20 tables, two related database files, a ready-to-query local mirror and SQL Server seed/mapping files for native cross-database testing. It includes 46 months of trends, KPI definitions, customer features, outcome labels and baseline forecasts.
 
 [Result visualizations](VISUALIZATIONS.md) add an optional agent that selects an appropriate chart and allowed Python library. Plotly renders interactive browser charts; Matplotlib/Seaborn provide inline static charts. Unsuitable results get query-improvement suggestions without automatic SQL execution.
