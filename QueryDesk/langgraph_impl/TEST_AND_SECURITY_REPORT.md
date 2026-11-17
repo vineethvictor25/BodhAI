@@ -1,5 +1,23 @@
 # End-to-End Test and Security Review
 
+## Latest feature verification — 17 November 2026
+
+The domain knowledge workspace is implemented locally. The following checks were completed for that implementation; the documentation/diagram update itself changes no application behavior.
+
+| Check | Recorded result |
+| --- | --- |
+| Backend regression suite | PASS — 286 tests in the final full run. |
+| Additional protected graph integration | PASS — one subsequently added test proved published metric context reaches intent/schema/SQL/response and executes through protected reads with fresh approvals. Together these cover 287 distinct backend tests. |
+| Frontend component tests | PASS — 51 tests across eight files. |
+| Production build and browser acceptance | PASS — the browser exercised normal query/chart flows plus knowledge creation, metadata validation, submission and publication through the real API. |
+| Knowledge-specific guardrails | Tests cover separate maintenance/data permissions, hidden/stale mappings, drafts excluded from retrieval/history, immutable revisions, approval invalidation, rollback, alias ambiguity and configured encryption/migration. |
+| Credential scan | PASS for the implementation change set; no configured credentials, private runtime records or video files were included. |
+
+Model responses in automated acceptance/integration checks were scripted; live AI knowledge suggestions and operator-specific remote warehouse behavior were not certified by these tests. Metadata validation does not establish business-result correctness. The workspace uses application records, not a new graph/vector database. See [the current architecture](ARCHITECTURE.md) and [domain knowledge guide](DOMAIN_KNOWLEDGE.md).
+
+The assessment and baseline below are retained as historical evidence from 15 November 2026; their smaller test counts are not the latest suite totals.
+
+
 **Assessment date:** 15 November 2026  
 **Scope:** Current local project files, automated tests, browser flow, and dependency advisories. This is not a penetration test or a certification of a production deployment.
 
