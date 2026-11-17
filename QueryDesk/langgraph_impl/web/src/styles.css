@@ -27,3 +27,23 @@
 .visualization-panel {margin:22px 0;border:1px solid #d6e3df;border-radius:14px;background:linear-gradient(135deg,#f2faf7,#f7f5ff);padding:20px}.visualization-heading {display:flex;gap:18px;justify-content:space-between;align-items:center;flex-wrap:wrap}.visualization-heading h3 {margin:0}.visualization-heading p,.visualization-note {font-size:12px;color:#597164}.visualize-button {background:#176d60;color:white;border:0;border-radius:9px;padding:11px 16px;cursor:pointer}.visualize-button:disabled {opacity:.6}.visualization-content {margin-top:22px}.interactive-chart {width:100%;min-height:420px}.visualization-kpi {padding:30px;background:linear-gradient(120deg,#116a5d,#65509b);border-radius:15px;color:white;display:flex;flex-direction:column;gap:12px}.visualization-kpi strong {font-size:clamp(28px,5vw,52px);overflow-wrap:anywhere}.chart-suggestions li {margin:14px 0}.chart-suggestions button {display:block;margin-top:6px}
 
 .static-chart {width:100%;height:auto;display:block;border-radius:10px;margin:18px 0}.visualization-heading label {font-size:12px;display:flex;flex-direction:column;gap:6px}.visualization-heading select {padding:8px;border:1px solid #cbded5;border-radius:7px;background:white}
+
+/* Domain knowledge authoring uses the existing accessible form vocabulary. */
+.knowledge-page > label { display: grid; gap: .5rem; max-width: 34rem; margin: 1.5rem 0; }
+.knowledge-section { margin: 1.5rem 0; padding: 1.25rem; border: 1px solid var(--border, #dce3e9); border-radius: 14px; }
+.knowledge-section summary { cursor: pointer; font-weight: 650; }
+.knowledge-section label { display: grid; gap: .5rem; margin: 1rem 0; }
+.knowledge-page textarea { min-height: 6rem; width: 100%; box-sizing: border-box; }
+.knowledge-page select, .knowledge-page input:not([type=checkbox]) { max-width: 100%; }
+.knowledge-version { border-top: 1px solid var(--border, #dce3e9); margin-top: 1rem; padding-top: 1rem; }
+.knowledge-version button, .knowledge-page .metric-card > button { margin: .35rem .4rem .35rem 0; }
+.knowledge-key-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media(max-width: 700px) { .knowledge-key-pair { grid-template-columns: 1fr; } }
+
+.knowledge-section > button, .knowledge-section article button, .knowledge-version button, .knowledge-page .metric-card > button { background: #eef4e9; border: 1px solid #d6e1cd; padding: 9px 13px; border-radius: 7px; font-size: 13px; font-weight: 600; color: #35583d; }
+.knowledge-section > button:hover, .knowledge-version button:hover { background: #e3eddb; }
+.knowledge-section label.check-label { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.6; }
+.knowledge-section label.check-label input { width: auto; flex-shrink: 0; margin-top: 4px; }
+.knowledge-page > label select, .knowledge-section select, .knowledge-section textarea { border: 1px solid #c8d7be; border-radius: 7px; padding: 10px; background: white; font: inherit; }
+.knowledge-section p, .knowledge-version p { font-size: 13px; line-height: 1.7; }
+.knowledge-version h3 { font-size: 15px; font-weight: 650; }
