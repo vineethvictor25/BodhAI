@@ -635,7 +635,7 @@ def create_app(database=None,workflow_factory=None,record_path=None,confirmation
             lambda:security.check(user["id"],stamp),row_scope=row_scope)
         if not user["can_view_pii"]:
             business.catalog["policies"].append("PII columns are unavailable to this account. Use non-sensitive identifiers; request administrator permission if the question requires PII. Never invent hidden personal details.")
-        return view,business
+        return view,knowledge_store.augment(business,view)
 
     def visible_sources(user):
         permitted={grant["source"] for grant in user["grants"]}
@@ -715,6 +715,10 @@ def create_app(database=None,workflow_factory=None,record_path=None,confirmation
 
     app=FastAPI(title="QueryDesk API",version="1.1.0",lifespan=lifespan,docs_url=None,redoc_url=None,openapi_url=None)
     app.state.jobs=jobs
+    from .domain_knowledge import install_knowledge_routes
+    knowledge_store=install_knowledge_routes(app,records,security,open_source,root_source,jobs,
+        lambda source,user:LangChainModel(config=ModelConfig.for_role('schema'),source=source,
+            principal_groups=('role:'+user['role'],*('group:'+g for g in user['groups']))))
     app.state.records=records
     app.state.sources=sources
     app.state.security=security
